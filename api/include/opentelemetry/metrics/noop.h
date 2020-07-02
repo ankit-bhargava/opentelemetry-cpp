@@ -6,8 +6,6 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace metrics 
 {
 
-// Debating if I should put these in their own namespace so I don't have to use Noop in each class name?
-
 class NoopIntValueObserver : public IntValueObserver {
 
 public:
@@ -17,9 +15,6 @@ public:
                          nostd::string_view /*unit*/, 
                          bool /*enabled*/, 
                          void (*callback)(IntObserverResult)) {}
-                         // I was originally calling the base class constructor here as well
-                         // IntValueObserver(name,description, unit,...)
-                         // but do not think that's necessary for the API's noop
 
 };
 
