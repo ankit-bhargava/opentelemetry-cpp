@@ -1,6 +1,5 @@
 load("//bazel:otel_cc_benchmark.bzl", "otel_cc_benchmark")
 
-
 cc_test(
     name = "noop_instrument_test",
     srcs = [
