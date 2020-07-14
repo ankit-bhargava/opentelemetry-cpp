@@ -110,7 +110,7 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  virtual void update(nostd::variant<int, double> value) final {}
+  virtual void update(nostd::variant<int, double> value) {}
 };
 
 class SynchronousInstrument : public Instrument

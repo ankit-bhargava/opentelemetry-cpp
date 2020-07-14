@@ -59,7 +59,7 @@ public:
                              nostd::string_view description,
                              nostd::string_view unit,
                              bool enabled,
-                             std::shared_ptr<Aggregator> agg)
+                             Aggregator * agg)
       : Instrument(name, description, unit, enabled), agg_(agg)
   {
     // can't think of a use case in which the user would create an instrument and not store it
@@ -106,12 +106,12 @@ public:
    */
   virtual void update(nostd::variant<int, double> value) final { agg_->update(nostd::get<0>(value)); }
 
-  virtual std::shared_ptr<Aggregator> get_aggregator(){
+  virtual Aggregator * get_aggregator() final {
     return agg_;
   }
 
 private:
-  std::shared_ptr<Aggregator> agg_;
+  Aggregator * agg_;
   std::atomic<int> ref_;
 };
 
@@ -143,8 +143,6 @@ public:
     return std::shared_ptr<BoundSynchronousInstrument>(new BoundSynchronousInstrument());
   }
 
-
-  // THINK THIS FUNCTION NEEDS TO GO
   /**
    * Records a single synchronous metric event.
    * Since this is an unbound synchronous instrument, labels are required in  * metric capture
@@ -157,12 +155,16 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  // virtual void update(nostd::variant<int, double> value, const nostd::string_view &labels)
-  // {
-  //   auto sp = bind(labels);
-  //   sp->update(value);
-  //   sp->unbind();
-  // }
+  virtual void update(nostd::variant<int, double> value, const nostd::string_view &labels) final
+  {
+    auto sp = bind(labels);
+    sp->update(value);
+    sp->unbind();
+  }
+
+
+  // Data structures -- this is private so the meter can access it, would rather use a friend declaration of some type instead
+  std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument>> boundInstruments_;
 
 private:
   metrics_api::InstrumentKind kind_;

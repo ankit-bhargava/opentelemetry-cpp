@@ -72,6 +72,7 @@ TEST(Counter, DefaultConstruction)
 
   std::map<std::string, std::string> labels = {{"key", "value"}};
   auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+
   alpha.bind(labelkv);
 
   auto gamma = alpha.bind(labelkv);

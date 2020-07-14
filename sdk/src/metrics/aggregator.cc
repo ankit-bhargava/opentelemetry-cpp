@@ -179,6 +179,77 @@ namespace metrics
     return values_;
   }
 
+MinMaxSumCountAggregator::MinMaxSumCountAggregator(metrics_api::BoundInstrumentKind kind)
+{
+  kind_ = kind;
+  values_ = std::vector<int>(4);
+  values_[0] = INT_MAX; // min
+  values_[1] = INT_MIN; // max
+  values_[2] = 0; // sum
+  values_[3] = 0; // count
+  checkpoint_ = values_;
+}
+
+void MinMaxSumCountAggregator::update(int val)
+{
+  mu_.lock();
+
+  if (val < values_[0]) // set min
+    values_[0] = val;
+  if (val > values_[1]) // set max
+    values_[1] = val;
+
+  values_[2] += val; // compute sum
+  values_[3]++; // increment count
+
+  mu_.unlock();
+}
+
+void MinMaxSumCountAggregator::checkpoint()
+{
+  mu_.lock();
+  checkpoint_ = values_;
+  // Reset the values
+  values_[0] = INT_MAX;
+  values_[1] = INT_MIN;
+  values_[2] = 0;
+  values_[3] = 0;
+  mu_.unlock();
+}
+
+void MinMaxSumCountAggregator::merge(const MinMaxSumCountAggregator &other)
+{
+  mu_.lock();
+  if (this->kind_ == other.kind_)
+  {
+    // set min
+    if (other.values_[0] < values_[0])
+      values_[0] = other.values_[0];
+    // set max
+    if (other.values_[1] > values_[1])
+      values_[1] = other.values_[1];
+    // set sum
+    values_[2] += other.values_[2];
+    // set count
+    values_[3] += other.values_[3];
+  }
+  else
+  {
+    //Aggregator mismatch exception
+  }
+  mu_.unlock();
+}
+
+std::vector<int> MinMaxSumCountAggregator::get_checkpoint()
+{
+  return checkpoint_;
+}
+
+std::vector<int> MinMaxSumCountAggregator::get_values()
+{
+  return values_;
+}
+
 }  // namespace metrics
 }  // namespace sdk
 OPENTELEMETRY_END_NAMESPACE
