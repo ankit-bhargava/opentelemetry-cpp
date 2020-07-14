@@ -83,6 +83,18 @@ TEST(IntCounter, StressAdd){
   EXPECT_EQ(alpha.boundInstruments_[mapToString(labels1)]->get_aggregator()->get_values()[0], 5678);
 }
 
+void IntCallback(ObserverResult result)
+{
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  result.observe(1, labels);
+  result.observe(-1, labels);
+}
+
+TEST (IntValueObserver, InstrumentFunctions){
+  std::shared_ptr<IntValueObserver> alpha(new IntValueObserver("test", "none", "unitless", true, &IntCallback));
+  //ObserverResult beta(alpha);
+}
+
 // TEST(UpDownCounter, DefaultConstruction)
 // {
 //   NoopIntUpDownCounter alpha("test", "none", "unitless", true);

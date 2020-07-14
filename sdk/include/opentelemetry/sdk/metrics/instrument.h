@@ -170,6 +170,8 @@ private:
   metrics_api::InstrumentKind kind_;
 };
 
+class ObserverResult;
+
 class AsynchronousInstrument : public Instrument
 {
 
@@ -180,7 +182,7 @@ public:
                          nostd::string_view description,
                          nostd::string_view unit,
                          bool enabled,
-                         void(*callback)(metrics_api::ObserverResult),
+                         void(*callback)(ObserverResult),
                          metrics_api::BoundInstrumentKind kind):
                          Instrument(name, description, unit, enabled), callback_(callback), kind_(kind) {}
 
@@ -192,17 +194,26 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return none
    */
-  virtual void update(nostd::variant<int, double> value, const trace::KeyValueIterable &labels) final {}
+  virtual void observe(int value, const std::map<std::string, std::string> &labels) = 0;
+
+  
 
 protected:
   // Callback function which takes a pointer to an Asynchronous instrument (this) type which is
   // stored in an observer result type and returns nothing.  This function calls the instrument's
   // observe.
-  void (*callback_)(metrics_api::ObserverResult);
+  void (*callback_)(ObserverResult);
   metrics_api::BoundInstrumentKind kind_;
 
 };
 
+std::string mapToString(const std::map<std::string,std::string> & conv){
+  std::stringstream ss;
+  for (auto i:conv){
+    ss <<i.first <<':' <<i.second <<',';
+  }
+  return ss.str();
+}
   
 } // namespace metrics
 } // namespace sdk

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "opentelemetry/sdk/metrics/instrument.h"
+#include "opentelemetry/sdk/metrics/observer_result.h"
 
 
 namespace metrics_api = opentelemetry::metrics;
@@ -22,9 +23,8 @@ public:
                    nostd::string_view description,
                    nostd::string_view unit,
                    bool enabled,
-                   void (*callback)(metrics_api::ObserverResult),
-                   metrics_api::BoundInstrumentKind kind):
-                   AsynchronousInstrument(name,description,unit,enabled,callback, kind)
+                   void (*callback)(ObserverResult)):
+                   AsynchronousInstrument(name,description,unit,enabled,callback, metrics_api::BoundInstrumentKind::BoundIntValueRecorder)
   {}
 
   /*
@@ -34,7 +34,7 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @param labels the set of labels, as key-value pairs
    */
-  virtual void observe(int value, const std::map<std::string, std::string> &labels) {
+  virtual void observe(int value, const std::map<std::string, std::string> &labels) override {
       std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
       if (boundAggregators_.find(labelset) == boundAggregators_.end())
       {
@@ -48,7 +48,7 @@ public:
       }
   }
 
-    std::unordered_map<std::string, std::shared_ptr<MinMaxSumCountAggregator>> boundAggregators_;
+  std::unordered_map<std::string, std::shared_ptr<Aggregator>> boundAggregators_;
 };
 
 }

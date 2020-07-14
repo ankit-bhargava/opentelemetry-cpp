@@ -13,14 +13,6 @@ namespace sdk
 namespace metrics 
 {
 
-std::string mapToString(const std::map<std::string,std::string> & conv){
-  std::stringstream ss;
-  for (auto i:conv){
-    ss <<i.first <<':' <<i.second <<',';
-  }
-  return ss.str();
-}
-
 class BoundIntCounter final: public BoundSynchronousInstrument{
 
 public:
