@@ -2,6 +2,7 @@
 #include <cstring>
 #include <string>
 #include "opentelemetry/sdk/metrics/sync_instruments.h"
+#include "opentelemetry/sdk/metrics/async_instruments.h"
 #include <map>
 #include <thread>
 

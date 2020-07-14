@@ -1,3 +1,5 @@
+#pragma once
+
 #include "opentelemetry/sdk/metrics/instrument.h"
 #include <stdexcept>
 #include <map>

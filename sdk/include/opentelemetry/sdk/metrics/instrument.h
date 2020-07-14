@@ -1,3 +1,5 @@
+#pragma once
+
 #include "opentelemetry/metrics/instrument.h"
 #include "opentelemetry/sdk/metrics/aggregator.h"
 #include "opentelemetry/version.h"
@@ -168,39 +170,38 @@ private:
   metrics_api::InstrumentKind kind_;
 };
 
-// class AsynchronousInstrument : public Instrument
-// {
+class AsynchronousInstrument : public Instrument
+{
 
-// public:
-//   AsynchronousInstrument() = default;
+public:
+  AsynchronousInstrument() = default;
 
-//   AsynchronousInstrument(nostd::string_view name,
-//                          nostd::string_view description,
-//                          nostd::string_view unit,
-//                          bool enabled,
-//                          void(*callback)(ObserverResult)):
-//                          Instrument(name, description, unit, enabled), callback_(callback)
-//   {}
+  AsynchronousInstrument(nostd::string_view name,
+                         nostd::string_view description,
+                         nostd::string_view unit,
+                         bool enabled,
+                         void(*callback)(metrics_api::ObserverResult),
+                         metrics_api::BoundInstrumentKind kind):
+                         Instrument(name, description, unit, enabled), callback_(callback), kind_(kind) {}
 
-//   /**
-//    * Captures data by activating the callback function associated with the
-//    * instrument and storing its return value.  Callbacks for asychronous
-//    * instruments are defined during construction.
-//    *
-//    * @param value is the numerical representation of the metric being captured
-//    * @return none
-//    */
-//   virtual void update(nostd::variant<int, double> value, const trace::KeyValueIterable &labels) final {}
+  /**
+   * Captures data by activating the callback function associated with the
+   * instrument and storing its return value.  Callbacks for asychronous
+   * instruments are defined during construction.
+   *
+   * @param value is the numerical representation of the metric being captured
+   * @return none
+   */
+  virtual void update(nostd::variant<int, double> value, const trace::KeyValueIterable &labels) final {}
 
-// protected:
-//   // Callback function which takes a pointer to an Asynchronous instrument (this) type which is
-//   // stored in an observer result type and returns nothing.  This function calls the instrument's
-//   // observe.
-//   void (*callback_)(ObserverResult);
+protected:
+  // Callback function which takes a pointer to an Asynchronous instrument (this) type which is
+  // stored in an observer result type and returns nothing.  This function calls the instrument's
+  // observe.
+  void (*callback_)(metrics_api::ObserverResult);
+  metrics_api::BoundInstrumentKind kind_;
 
-//   std::unordered_map<trace_api::KeyValueIterable, unique_ptr<Aggregator>> boundAggregators_;
-  
-// };
+};
 
   
 } // namespace metrics
