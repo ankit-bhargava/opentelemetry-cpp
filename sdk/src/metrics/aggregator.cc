@@ -11,17 +11,11 @@ namespace sdk
 namespace metrics
 {
 
-// TODO: add thread-safety measures to this, decide how we want to propogate type, atomic types,
-// enforce aggregator type during merging,
-
 /*
  * Performs calculations necessary to combine updates from instruments into an * insightful value.
  * Also stores current instrument values and checkpoints collected at intervals
  * governing the entire pipeline.
  */
-
-
-
   CounterAggregator::CounterAggregator(metrics_api::BoundInstrumentKind kind) 
   {
     // Aggregator supports int and double, type is enforced in the instrument itself

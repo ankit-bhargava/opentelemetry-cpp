@@ -17,9 +17,6 @@ namespace metrics
 {
 
 
-// TODO: what is enabled_share_from?, replace things with keyvaliter, inherit both the api and sdk
-// class, where to add the aggregator since it isn't in the API, overloaded constructor?
-
 class Instrument : metrics_api::Instrument {
 
 public:
@@ -64,7 +61,6 @@ public:
                              std::shared_ptr<Aggregator> agg)
       : Instrument(name, description, unit, enabled), agg_(agg)
   {
-    // can't think of a use case in which the user would create an instrument and not store it
     this->inc_ref();
   }
 
@@ -76,17 +72,6 @@ public:
    * @return void
    */
   virtual void unbind() final {
-    // WE DO ACTUALLY NEED INTERNAL REF COUNTING
-    // explanation: shared ptr only reduces reference count when an object is destoryed which occurs
-    // when a user explicitly deletes the bound instrument or it goes out of scope.  however, the
-    // user cannot actually delete the instrument because we then won't be able to read from it when
-    // exporting.  we also cannot wait for the instrument to go out of scope because it is possible
-    // that a user calls unbind() then a call to export() is made before the instrument's current
-    // scope is terminated.  Thus, an instrument that should be removed from the collection will
-    // remain.
-
-    // Secondary discussion -- should we penalize the user for "forgetting" to unbind.  Can use shared 
-    // ptr reference counting as a fallabck
     ref_ -= 1;
   }
 
@@ -106,7 +91,9 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  virtual void update(nostd::variant<int, double> value) final { agg_->update(nostd::get<0>(value)); }
+  virtual void update(int value) final { 
+    agg_->update(value); 
+  }
 
   virtual std::shared_ptr<Aggregator> get_aggregator(){
     return agg_;
@@ -114,7 +101,7 @@ public:
 
 private:
   std::shared_ptr<Aggregator> agg_;
-  std::atomic<int> ref_;
+  int ref_;
 };
 
 class SynchronousInstrument : public Instrument {
@@ -165,6 +152,10 @@ public:
   //   sp->update(value);
   //   sp->unbind();
   // }
+
+  metrics_api::InstrumentKind get_kind(){
+    return kind_;
+  }
 
 private:
   metrics_api::InstrumentKind kind_;

@@ -38,7 +38,6 @@ public:
       } else {
         update(value); 
       }
-      
     }
   };
 
@@ -118,7 +117,6 @@ public:
      */
     void add(int value) { 
       update(value);
-      
     }
   };
 
@@ -198,7 +196,6 @@ public:
      */
     void record(int value) { 
       update(value);
-      
     }
   };
 
