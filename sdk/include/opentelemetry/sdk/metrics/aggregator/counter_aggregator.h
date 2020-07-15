@@ -16,6 +16,7 @@ namespace sdk
 {
 namespace metrics
 {
+
 template<class T>
 class CounterAggregator : public Aggregator<T>
 {
@@ -92,8 +93,7 @@ public:
      * @param none
      * @return the BoundInstrumentKind of the aggregator's owner
      */
-    std::vector<T> get_values() override
-    {
+    std::vector<T> get_values() override{
         return this->values_;
     }
     
