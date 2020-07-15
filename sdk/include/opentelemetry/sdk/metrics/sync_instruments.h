@@ -13,18 +13,19 @@ namespace sdk
 namespace metrics 
 {
 
-class BoundIntCounter final: public BoundSynchronousInstrument{
-
+template <class T>
+class BoundCounter final: public BoundSynchronousInstrument<T> {
+    
 public:
-    BoundIntCounter() = default;
-
-    BoundIntCounter(nostd::string_view name,
+    BoundCounter() = default;
+    
+    BoundCounter(nostd::string_view name,
                     nostd::string_view description,
                     nostd::string_view unit,
                     bool enabled)
-                    : BoundSynchronousInstrument(name, description, unit, enabled, std::shared_ptr<Aggregator>(new CounterAggregator(metrics_api::BoundInstrumentKind::BoundIntCounter))) // Aggregator is chosen here
+                    :BoundSynchronousInstrument<T>(name, description, unit, enabled, std::shared_ptr<Aggregator>(new CounterAggregator(metrics_api::BoundInstrumentKind::BoundIntCounter))) // Aggregator is chosen here
     {}
-
+    
     /*
      * Add adds the value to the counter's sum. The labels are already linked   * to the instrument
      * and are not specified.
@@ -32,28 +33,32 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(int value) { 
-      if (value < 0){
-        throw std::invalid_argument("Counter instrument updates must be non-negative.");
-      } else {
-        update(value); 
-      }
+    void add(T value) {
+        this->mu_.lock();
+        if (value < 0){
+            throw std::invalid_argument("Counter instrument updates must be non-negative.");
+        } else {
+            this->update(value);
+        }
+        this->mu_.unlock();
     }
-  };
 
-  class IntCounter final : public SynchronousInstrument
-  {
+};
 
-  public:
-    IntCounter() = default;
-
-    IntCounter(nostd::string_view name,
+template <class T>
+class Counter final : public SynchronousInstrument<T>
+{
+    
+public:
+    Counter() = default;
+    
+    Counter(nostd::string_view name,
                nostd::string_view description,
                nostd::string_view unit,
                bool enabled)
-        : SynchronousInstrument(name, description, unit, enabled, metrics_api::InstrumentKind::IntCounter)
+    : SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntCounter)
     {}
-
+    
     /*
      * Bind creates a bound instrument for this counter. The labels are
      * associated with values recorded via subsequent calls to Record.
@@ -61,22 +66,22 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<BoundIntCounter> bind(const std::map<std::string, std::string> &labels)
+    std::shared_ptr<BoundCounter<T>> bind(const std::map<std::string, std::string> &labels)
     {
-      std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
-      if (boundInstruments_.find(labelset) == boundInstruments_.end())
-      {
-        auto sp1 = std::make_shared<BoundIntCounter>(name_, description_, unit_, enabled_);
-        boundInstruments_[labelset]=sp1;  // perhaps use emplace
-        return sp1;
-      }
-      else
-      {
-        boundInstruments_[labelset]->inc_ref();
-        return boundInstruments_[labelset];
-      }
+        std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
+        if (boundInstruments_.find(labelset) == boundInstruments_.end())
+        {
+            auto sp1 = std::make_shared<BoundCounter<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            boundInstruments_[labelset]=sp1;  // perhaps use emplace
+            return sp1;
+        }
+        else
+        {
+            boundInstruments_[labelset]->inc_ref();
+            return boundInstruments_[labelset];
+        }
     }
-
+    
     /*
      * Add adds the value to the counter's sum. The labels should contain
      * the keys and values to be associated with this value.  Counters only     * accept positive
@@ -85,29 +90,32 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(int value, const std::map<std::string, std::string> &labels) 
+    void add(T value, const std::map<std::string, std::string> &labels)
     {
-      auto sp = bind(labels);
-      sp->update(value);
-      sp->unbind();
+        this->mu_.lock();
+        auto sp = bind(labels);
+        sp->update(value);
+        sp->unbind();
+        this->mu_.unlock();
     }
     
-    // Data structures -- this is private so the meter can access it, would rather use a friend declaration of some type instead
-    std::unordered_map<std::string, std::shared_ptr<BoundIntCounter>> boundInstruments_;
-  };
+    std::unordered_map<std::string, std::shared_ptr<BoundCounter<T>>> boundInstruments_;
+};
 
-class BoundIntUpDownCounter final: public BoundSynchronousInstrument{
 
+template <class T>
+class BoundUpDownCounter final: public BoundSynchronousInstrument<T> {
+    
 public:
-    BoundIntUpDownCounter() = default;
-
-    BoundIntUpDownCounter(nostd::string_view name,
-                    nostd::string_view description,
-                    nostd::string_view unit,
-                    bool enabled)
-                    : BoundSynchronousInstrument(name, description, unit, enabled, std::shared_ptr<Aggregator>(new CounterAggregator(metrics_api::BoundInstrumentKind::BoundIntUpDownCounter))) // Aggregator is chosen here
+    BoundUpDownCounter() = default;
+    
+    BoundUpDownCounter(nostd::string_view name,
+                          nostd::string_view description,
+                          nostd::string_view unit,
+                          bool enabled)
+    : BoundSynchronousInstrument<T>(name, description, unit, enabled, std::shared_ptr<Aggregator>(new CounterAggregator(metrics_api::BoundInstrumentKind::BoundIntUpDownCounter))) // Aggregator is chosen here
     {}
-
+    
     /*
      * Add adds the value to the counter's sum. The labels are already linked   * to the instrument
      * and are not specified.
@@ -115,24 +123,27 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(int value) { 
-      update(value);
+    void add(T value) {
+        this->mu_.lock(); // does this need to be locked?
+        this->update(value); //update calls the aggregator which is itself locked
+        this->mu_.unlock(); 
     }
-  };
+};
 
-  class IntUpDownCounter final : public SynchronousInstrument
-  {
-
-  public:
-    IntUpDownCounter() = default;
-
-    IntUpDownCounter(nostd::string_view name,
-               nostd::string_view description,
-               nostd::string_view unit,
-               bool enabled)
-        : SynchronousInstrument(name, description, unit, enabled, metrics_api::InstrumentKind::IntUpDownCounter)
+template <class T>
+class UpDownCounter final : public SynchronousInstrument<T>
+{
+    
+public:
+    UpDownCounter() = default;
+    
+    UpDownCounter(nostd::string_view name,
+                     nostd::string_view description,
+                     nostd::string_view unit,
+                     bool enabled)
+    : SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntUpDownCounter)
     {}
-
+    
     /*
      * Bind creates a bound instrument for this counter. The labels are
      * associated with values recorded via subsequent calls to Record.
@@ -140,22 +151,22 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<BoundIntUpDownCounter> bind(const std::map<std::string, std::string> &labels)
+    std::shared_ptr<BoundUpDownCounter<T>> bind(const std::map<std::string, std::string> &labels)
     {
-      std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
-      if (boundInstruments_.find(labelset) == boundInstruments_.end())
-      {
-        auto sp1 = std::make_shared<BoundIntUpDownCounter>(name_, description_, unit_, enabled_);
-        boundInstruments_[labelset]=sp1;  // perhaps use emplace
-        return sp1;
-      }
-      else
-      {
-        boundInstruments_[labelset]->inc_ref();
-        return boundInstruments_[labelset];
-      }
+        std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
+        if (boundInstruments_.find(labelset) == boundInstruments_.end())
+        {
+            auto sp1 = std::make_shared<BoundUpDownCounter<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            boundInstruments_[labelset]=sp1;  // perhaps use emplace
+            return sp1;
+        }
+        else
+        {
+            boundInstruments_[labelset]->inc_ref();
+            return boundInstruments_[labelset];
+        }
     }
-
+    
     /*
      * Add adds the value to the counter's sum. The labels should contain
      * the keys and values to be associated with this value.  Counters only     * accept positive
@@ -164,29 +175,32 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(int value, const std::map<std::string, std::string> &labels) 
+    void add(T value, const std::map<std::string, std::string> &labels)
     {
-      auto sp = bind(labels);
-      sp->update(value);
-      sp->unbind();
+        this->mu_.lock();
+        auto sp = bind(labels);
+        sp->update(value);
+        sp->unbind();
+        this->mu_.unlock();
     }
     
     // Data structures -- this is private so the meter can access it, would rather use a friend declaration of some type instead
-    std::unordered_map<std::string, std::shared_ptr<BoundIntUpDownCounter>> boundInstruments_;
-  };
+    std::unordered_map<std::string, std::shared_ptr<BoundUpDownCounter<T>>> boundInstruments_;
+};
 
-class BoundIntValueRecorder final: public BoundSynchronousInstrument{
-
+template <class T>
+class BoundValueRecorder final: public BoundSynchronousInstrument<T> {
+    
 public:
-    BoundIntValueRecorder() = default;
-
-    BoundIntValueRecorder(nostd::string_view name,
-                    nostd::string_view description,
-                    nostd::string_view unit,
-                    bool enabled)
-                    : BoundSynchronousInstrument(name, description, unit, enabled, std::shared_ptr<Aggregator>(new MinMaxSumCountAggregator(metrics_api::BoundInstrumentKind::BoundIntValueRecorder))) // Aggregator is chosen here
+    BoundValueRecorder() = default;
+    
+    BoundValueRecorder(nostd::string_view name,
+                          nostd::string_view description,
+                          nostd::string_view unit,
+                          bool enabled)
+    : BoundSynchronousInstrument<T>(name, description, unit, enabled, std::shared_ptr<Aggregator>(new MinMaxSumCountAggregator(metrics_api::BoundInstrumentKind::BoundIntValueRecorder))) // Aggregator is chosen here
     {}
-
+    
     /*
      * Add adds the value to the counter's sum. The labels are already linked   * to the instrument
      * and are not specified.
@@ -194,24 +208,27 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void record(int value) { 
-      update(value);
+    void record(T value) {
+        this->mu_.lock();
+        update(value);
+        this->mu_.unlock();
     }
-  };
+};
 
-  class IntValueRecorder final : public SynchronousInstrument
-  {
-
-  public:
-    IntValueRecorder() = default;
-
-    IntValueRecorder(nostd::string_view name,
-               nostd::string_view description,
-               nostd::string_view unit,
-               bool enabled)
-        : SynchronousInstrument(name, description, unit, enabled, metrics_api::InstrumentKind::IntValueRecorder)
+template <class T>
+class ValueRecorder final : public SynchronousInstrument<T>
+{
+    
+public:
+    ValueRecorder() = default;
+    
+    ValueRecorder(nostd::string_view name,
+                     nostd::string_view description,
+                     nostd::string_view unit,
+                     bool enabled)
+    : SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntValueRecorder)
     {}
-
+    
     /*
      * Bind creates a bound instrument for this counter. The labels are
      * associated with values recorded via subsequent calls to Record.
@@ -219,22 +236,22 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<BoundIntValueRecorder> bind(const std::map<std::string, std::string> &labels)
+    std::shared_ptr<BoundValueRecorder<T>> bind(const std::map<std::string, std::string> &labels)
     {
-      std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
-      if (boundInstruments_.find(labelset) == boundInstruments_.end())
-      {
-        auto sp1 = std::make_shared<BoundIntValueRecorder>(name_, description_, unit_, enabled_);
-        boundInstruments_[labelset]=sp1;  // perhaps use emplace
-        return sp1;
-      }
-      else
-      {
-        boundInstruments_[labelset]->inc_ref();
-        return boundInstruments_[labelset];
-      }
+        std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
+        if (boundInstruments_.find(labelset) == boundInstruments_.end())
+        {
+            auto sp1 = std::make_shared<BoundValueRecorder<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            boundInstruments_[labelset]=sp1;  // perhaps use emplace
+            return sp1;
+        }
+        else
+        {
+            boundInstruments_[labelset]->inc_ref();
+            return boundInstruments_[labelset];
+        }
     }
-
+    
     /*
      * Add adds the value to the counter's sum. The labels should contain
      * the keys and values to be associated with this value.  Counters only     * accept positive
@@ -243,16 +260,18 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void record(int value, const std::map<std::string, std::string> &labels) 
+    void record(T value, const std::map<std::string, std::string> &labels)
     {
-      auto sp = bind(labels);
-      sp->update(value);
-      sp->unbind();
+        this->mu_.lock();
+        auto sp = bind(labels);
+        sp->update(value);
+        sp->unbind();
+        this->mu_.unlock();
     }
     
     // Data structures -- this is private so the meter can access it, would rather use a friend declaration of some type instead
-    std::unordered_map<std::string, std::shared_ptr<BoundIntValueRecorder>> boundInstruments_;
-  };
+    std::unordered_map<std::string, std::shared_ptr<BoundValueRecorder<T>>> boundInstruments_;
+};
 
 }
 }
