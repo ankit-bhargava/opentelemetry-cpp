@@ -17,7 +17,7 @@ namespace sdk
 namespace metrics
 {
 template<class T>
-class MinMaxSumCountAggregator : public Aggregator<T>
+class MinMaxSumCountAggregator final : public Aggregator<T>
 {
 public:
   explicit MinMaxSumCountAggregator(metrics_api::BoundInstrumentKind kind)
