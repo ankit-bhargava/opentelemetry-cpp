@@ -29,9 +29,10 @@ public:
      * Sum is stored in values_[0]
      * Count is stored in position_[1]
      */
-    HistogramAggregator(metrics_api::BoundInstrumentKind kind, std::vector<double> boundaries)
+    HistogramAggregator(metrics_api::InstrumentKind kind, std::vector<double> boundaries)
     {
         this->kind_ = kind;
+        this->agg_kind_ = AggregatorKind:Histogram;
         boundaries_   = boundaries;
         this->values_     = std::vector<T>(2, 0);
         this->checkpoint_ = std::vector<T>(2, 0);
@@ -118,10 +119,10 @@ public:
     }
     
     /**
-     * Returns the current value
+     * Returns the current values
      *
      * @param none
-     * @return the present aggregator value
+     * @return the present aggregator values
      */
     std::vector<T> get_values() override
     {

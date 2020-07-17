@@ -20,7 +20,7 @@ template<class T>
 class MinMaxSumCountAggregator final : public Aggregator<T>
 {
 public:
-  explicit MinMaxSumCountAggregator(metrics_api::BoundInstrumentKind kind)
+  explicit MinMaxSumCountAggregator(metrics_api::InstrumentKind kind)
   {
     static_assert(std::is_arithmetic<T>::value, "Not an arithmetic type");
     this->kind_ = kind;

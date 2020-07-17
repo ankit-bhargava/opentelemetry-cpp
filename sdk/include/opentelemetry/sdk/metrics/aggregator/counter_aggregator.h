@@ -22,11 +22,12 @@ class CounterAggregator final : public Aggregator<T>
 {
     
 public:
-    CounterAggregator(metrics_api::BoundInstrumentKind kind)
+    CounterAggregator(metrics_api::InstrumentKind kind)
     {
         this->kind_ = kind;
         this->values_     = std::vector<T>(1, 0);
         this->checkpoint_ = std::vector<T>(1, 0);
+        this->agg_kind_ = AggregatorKind:Counter;
     }
     
     /**
@@ -88,10 +89,10 @@ public:
     }
     
     /**
-     * Returns the instrument kind which this aggregator is associated with
+     * Returns the current values
      *
      * @param none
-     * @return the BoundInstrumentKind of the aggregator's owner
+     * @return the present aggregator values
      */
     std::vector<T> get_values() override{
         return this->values_;
