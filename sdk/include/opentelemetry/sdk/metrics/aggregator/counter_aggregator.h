@@ -27,7 +27,7 @@ public:
         this->kind_ = kind;
         this->values_     = std::vector<T>(1, 0);
         this->checkpoint_ = std::vector<T>(1, 0);
-        this->agg_kind_ = AggregatorKind:Counter;
+        this->agg_kind_ = AggregatorKind::Counter;
     }
     
     /**

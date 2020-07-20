@@ -25,7 +25,8 @@ public:
     Instrument(nostd::string_view name,
                nostd::string_view description,
                nostd::string_view unit,
-               bool enabled): name_(name), description_(description), unit_(unit), enabled_(enabled) {}
+               bool enabled,
+               metrics_api::InstrumentKind kind): name_(name), description_(description), unit_(unit), enabled_(enabled), kind_(kind) {}
     
     // Returns true if the instrument is enabled and collecting data
     virtual bool IsEnabled() override {
@@ -41,12 +42,15 @@ public:
     // Return the insrument's units of measurement
     virtual nostd::string_view GetUnits() override { return unit_; }
     
+    virtual metrics_api::InstrumentKind get_kind() final { return this->kind_; }
+    
 protected:
     std::string name_;
     std::string description_;
     std::string unit_;
     bool enabled_;
     std::mutex mu_;
+    metrics_api::InstrumentKind kind_;
 };
 
 template <class T>
@@ -59,9 +63,9 @@ public:
                                nostd::string_view description,
                                nostd::string_view unit,
                                bool enabled,
-                               metrics_api::BoundInstrumentKind kind,
+                               metrics_api::InstrumentKind kind,
                                std::shared_ptr<Aggregator<T>> agg)
-    :Instrument(name, description, unit, enabled), agg_(agg), kind_(kind)
+    :Instrument(name, description, unit, enabled, kind), agg_(agg)
     { this->inc_ref(); } // increase reference count when instantiated
     
     /**
@@ -105,25 +109,16 @@ public:
     }
     
     /**
-     * Return this instrument's type
-     *
-     * @param none
-     * @return the BoundInstrumentKind describing this instrument
-     */
-    metrics_api::BoundInstrumentKind get_kind(){ return kind_; }
-    
-    /**
      * Returns the aggregator responsible for meaningfully combining update values.
      *
      * @param none
      * @return the aggregator assigned to this instrument
      */
-    virtual std::shared_ptr<Aggregator<T>> get_aggregator() final{ return agg_; }
+    virtual std::shared_ptr<Aggregator<T>> get_aggregator() final { return agg_; }
     
 private:
     std::shared_ptr<Aggregator<T>> agg_;
-    metrics_api::BoundInstrumentKind kind_;
-    int ref_;
+    int ref_ = 0;
 };
 
 template <class T>
@@ -136,8 +131,8 @@ public:
                           nostd::string_view description,
                           nostd::string_view unit,
                           bool enabled,
-                          metrics_api::InstrumentKind kind)
-    : Instrument(name, description, unit, enabled), kind_(kind)
+                          metrics_api::InstrumentKind kind):
+                          Instrument(name, description, unit, enabled,  kind)
     {}
     
     /**
@@ -152,18 +147,38 @@ public:
      */
     std::shared_ptr<BoundSynchronousInstrument<T>> bind(const nostd::string_view &labels);
     
-    /**
-     * Return this instrument's type
-     *
-     * @param none
-     * @return the InstrumentKind describing this instrument
-     */
-    metrics_api::InstrumentKind get_kind(){
-        return kind_;
+};
+
+template <class T>
+class ObserverResult;
+
+
+template <class T>
+class AsynchronousInstrument : public Instrument {
+    
+public:
+    
+    AsynchronousInstrument() = default;
+    
+    AsynchronousInstrument(nostd::string_view name,
+                           nostd::string_view description,
+                           nostd::string_view unit,
+                           bool enabled,
+                           void (*callback)(ObserverResult<T>),
+                           metrics_api::InstrumentKind kind):
+                           Instrument(name, description, unit, enabled, kind), callback_(callback)
+    {}
+    
+    virtual void observe(T value, const std::map<std::string, std::string> &labels){
+        agg_->update(value);
     }
     
+    void (*callback_)(ObserverResult<T>);
+    
 private:
-    metrics_api::InstrumentKind kind_;
+    std::shared_ptr<Aggregator<T>> agg_;
+    
+    
 };
 
 // Utility function which converts maps to strings for better performance

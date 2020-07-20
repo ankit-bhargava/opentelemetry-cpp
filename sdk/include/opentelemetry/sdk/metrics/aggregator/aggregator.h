@@ -99,7 +99,7 @@ public:
     * @param none
     * @return the AggregatorKind of this instrument
     */
-    virtual AggregatorKind get_aggregator_kind final ()
+    virtual AggregatorKind get_aggregator_kind() final
     {
         return agg_kind_;
     }

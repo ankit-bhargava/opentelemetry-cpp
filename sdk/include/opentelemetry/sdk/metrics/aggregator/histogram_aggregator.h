@@ -32,7 +32,7 @@ public:
     HistogramAggregator(metrics_api::InstrumentKind kind, std::vector<double> boundaries)
     {
         this->kind_ = kind;
-        this->agg_kind_ = AggregatorKind:Histogram;
+        this->agg_kind_ = AggregatorKind::Histogram;
         boundaries_   = boundaries;
         this->values_     = std::vector<T>(2, 0);
         this->checkpoint_ = std::vector<T>(2, 0);

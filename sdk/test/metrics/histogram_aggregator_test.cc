@@ -17,7 +17,7 @@ namespace metrics
 TEST(Histogram, Uniform)
 {
     std::vector<double> boundaries{10,20,30,40,50};
-    HistogramAggregator<int> alpha(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
+    HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, boundaries);
     
     alpha.checkpoint();
     EXPECT_EQ(alpha.get_checkpoint().size(),2);
@@ -40,7 +40,7 @@ TEST(Histogram, Uniform)
 TEST(Histogram, Normal)
 {
     std::vector<double> boundaries{2,4,6,8,10,12};
-    HistogramAggregator<int> alpha(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
+    HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, boundaries);
     
     std::vector<int> vals{1,3,3,5,5,5,7,7,7,7,9,9,9,11,11,13};
     for (int i : vals){
@@ -58,8 +58,8 @@ TEST(Histogram, Normal)
 
 TEST(Histogram, Merge){
     std::vector<double> boundaries{2,4,6,8,10,12};
-    HistogramAggregator<int> alpha(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
-    HistogramAggregator<int> beta(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
+    HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, boundaries);
+    HistogramAggregator<int> beta(metrics_api::InstrumentKind::Counter, boundaries);
     
     std::vector<int> vals{1,3,3,5,5,5,7,7,7,7,9,9,9,11,11,13};
     for (int i : vals){
@@ -93,7 +93,7 @@ int randVal(){
 
 TEST(Histogram, Concurrency){
     std::vector<double> boundaries{2,4,6,8,10,12};
-    HistogramAggregator<int> alpha(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
+    HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, boundaries);
     
     std::vector<int> vals1(1000);
     std::generate(vals1.begin(),vals1.end(),randVal);
@@ -107,7 +107,7 @@ TEST(Histogram, Concurrency){
     first.join();
     second.join();
     
-    HistogramAggregator<int> beta(metrics_api::BoundInstrumentKind::BoundIntCounter, boundaries);
+    HistogramAggregator<int> beta(metrics_api::InstrumentKind::Counter, boundaries);
     
     
     // Timing harness to compare linear and binary insertion

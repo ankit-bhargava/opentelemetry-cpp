@@ -26,8 +26,8 @@ public:
                     nostd::string_view unit,
                     bool enabled):
                     BoundSynchronousInstrument<T>(name, description, unit, enabled,
-                                                   metrics_api::BoundInstrumentKind::BoundIntCounter,std::shared_ptr<Aggregator<T>>(new
-                                                   CounterAggregator<T>(metrics_api::BoundInstrumentKind::BoundIntCounter))) // Aggregator is chosen here
+                                                   metrics_api::InstrumentKind::Counter,std::shared_ptr<Aggregator<T>>(new
+                                                   CounterAggregator<T>(metrics_api::InstrumentKind::Counter))) // Aggregator is chosen here
     {}
     
     /*
@@ -60,7 +60,7 @@ public:
                nostd::string_view description,
                nostd::string_view unit,
                bool enabled):
-               SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntCounter)
+               SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::Counter)
     {}
     
     /*
@@ -119,8 +119,8 @@ public:
                           nostd::string_view unit,
                           bool enabled):
                           BoundSynchronousInstrument<T>(name, description, unit, enabled,
-                                                        metrics_api::BoundInstrumentKind::BoundIntUpDownCounter,
-                                                        std::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(metrics_api::BoundInstrumentKind::BoundIntUpDownCounter)))
+                                                        metrics_api::InstrumentKind::UpDownCounter,
+                                                        std::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(metrics_api::InstrumentKind::UpDownCounter)))
     {}
     
     /*
@@ -148,7 +148,7 @@ public:
                      nostd::string_view description,
                      nostd::string_view unit,
                      bool enabled):
-                     SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntUpDownCounter)
+                     SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::UpDownCounter)
     {}
     
     /*
@@ -204,8 +204,8 @@ public:
                           nostd::string_view description,
                           nostd::string_view unit,
                           bool enabled): BoundSynchronousInstrument<T>(name, description, unit, enabled,
-                                                                       metrics_api::BoundInstrumentKind::BoundIntValueRecorder,
-                                                                       std::shared_ptr<Aggregator<T>>(new MinMaxSumCountAggregator<T>(metrics_api::BoundInstrumentKind::BoundIntValueRecorder))) // Aggregator is chosen here
+                                                                       metrics_api::InstrumentKind::ValueRecorder,
+                                                                       std::shared_ptr<Aggregator<T>>(new MinMaxSumCountAggregator<T>(metrics_api::InstrumentKind::ValueRecorder))) // Aggregator is chosen here
     {}
     
     /*
@@ -233,7 +233,7 @@ public:
                      nostd::string_view description,
                      nostd::string_view unit,
                      bool enabled):
-                     SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::IntValueRecorder)
+                     SynchronousInstrument<T>(name, description, unit, enabled, metrics_api::InstrumentKind::ValueRecorder)
     {}
     
     /*
