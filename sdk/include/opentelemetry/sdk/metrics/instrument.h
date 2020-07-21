@@ -6,6 +6,9 @@
 
 #include <memory>
 #include <unordered_map>
+#include <iostream>
+#include <vector>
+#include <map>
 
 namespace metrics_api = opentelemetry::metrics;
 namespace trace_api = opentelemetry::trace;
@@ -17,7 +20,7 @@ namespace metrics
 {
 
 
-class Instrument : public metrics_api::Instrument {
+class Instrument : virtual public metrics_api::Instrument {
     
 public:
     Instrument() = default;
@@ -26,7 +29,9 @@ public:
                nostd::string_view description,
                nostd::string_view unit,
                bool enabled,
-               metrics_api::InstrumentKind kind): name_(name), description_(description), unit_(unit), enabled_(enabled), kind_(kind) {}
+               metrics_api::InstrumentKind kind): name_(name), description_(description), unit_(unit), enabled_(enabled), kind_(kind) {
+        std::cerr <<"called instrument constructor" <<std::endl;
+    }
     
     // Returns true if the instrument is enabled and collecting data
     virtual bool IsEnabled() override {
@@ -54,9 +59,12 @@ protected:
 };
 
 template <class T>
-class BoundSynchronousInstrument : public Instrument, public metrics_api::BoundSynchronousInstrument<T> {
+class BoundSynchronousInstrument : virtual public Instrument, virtual public metrics_api::BoundSynchronousInstrument<T> {
     
 public:
+    
+    using Instrument::Instrument;
+    
     BoundSynchronousInstrument() = default;
     
     BoundSynchronousInstrument(nostd::string_view name,
@@ -122,9 +130,12 @@ private:
 };
 
 template <class T>
-class SynchronousInstrument : public Instrument, public metrics_api::BoundSynchronousInstrument<T> {
+class SynchronousInstrument : virtual public Instrument, virtual public metrics_api::SynchronousInstrument<T> {
     
 public:
+    
+    using Instrument::Instrument;
+    
     SynchronousInstrument() = default;
     
     SynchronousInstrument(nostd::string_view name,
@@ -147,6 +158,18 @@ public:
      */
     std::shared_ptr<BoundSynchronousInstrument<T>> bind(const nostd::string_view &labels);
     
+    virtual void update(T value, const trace::KeyValueIterable &labels) override {
+        // noop for now
+    }
+    
+    virtual void update(T val, const std::map<std::string, std::string> &labels){
+        // noop here
+    }
+    
+    virtual std::vector<std::shared_ptr<Aggregator<T>>> getAggs() {
+        return std::vector<std::shared_ptr<Aggregator<T>>>();
+    }
+    
 };
 
 template <class T>
@@ -154,12 +177,12 @@ class ObserverResult;
 
 
 template <class T>
-class AsynchronousInstrument : public Instrument, public metrics_api::AsynchronousInstrument<T> {
-    
+class AsynchronousInstrument : virtual public Instrument, virtual public metrics_api::AsynchronousInstrument<T> {
+
 public:
-    
+
     AsynchronousInstrument() = default;
-    
+
     AsynchronousInstrument(nostd::string_view name,
                            nostd::string_view description,
                            nostd::string_view unit,
@@ -168,17 +191,17 @@ public:
                            metrics_api::InstrumentKind kind):
                            Instrument(name, description, unit, enabled, kind), callback_(callback)
     {}
-    
+
     virtual void observe(T value, const std::map<std::string, std::string> &labels){
         agg_->update(value);
     }
-    
+
     void (*callback_)(ObserverResult<T>);
-    
+
 private:
     std::shared_ptr<Aggregator<T>> agg_;
-    
-    
+
+
 };
 
 // Utility function which converts maps to strings for better performance

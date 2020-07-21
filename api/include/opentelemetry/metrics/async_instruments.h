@@ -8,7 +8,7 @@ namespace metrics
 {
 
 template <class T>
-class ValueObserver : public AsynchronousInstrument<T>
+class ValueObserver : virtual public AsynchronousInstrument<T>
 {
 
 public:
@@ -32,7 +32,7 @@ public:
 };
 
 template <class T>
-class SumObserver : public AsynchronousInstrument<T>
+class SumObserver : virtual public AsynchronousInstrument<T>
 {
 
 public:
@@ -57,7 +57,7 @@ public:
 };
 
 template <class T>
-class UpDownSumObserver : public AsynchronousInstrument<T>
+class UpDownSumObserver : virtual public AsynchronousInstrument<T>
 {
 
 public:

@@ -3,6 +3,7 @@
 #include <memory>
 #include "opentelemetry/sdk/metrics/instrument.h"
 #include "opentelemetry/sdk/metrics/observer_result.h"
+#include "opentelemetry/metrics/async_instruments.h"
 
 
  namespace metrics_api = opentelemetry::metrics;
@@ -14,7 +15,7 @@
  {
 
  template <class T>
- class ValueObserver : public AsynchronousInstrument<T>
+ class ValueObserver : public AsynchronousInstrument<T>, virtual public metrics_api::ValueObserver<T>
  {
 
  public:
@@ -51,6 +52,10 @@
        this->mu_.unlock();
    }
      
+     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
+         // noop for now
+     }
+
      /*
       * Activate the intsrument's callback function to record a measurement.  This
       * function will be called by the specified controller at a regular interval.
@@ -66,9 +71,9 @@
     // Public mapping from labels (stored as strings) to their respective aggregators
    std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
- 
+
  template <class T>
- class SumObserver : public AsynchronousInstrument<T>
+ class SumObserver : public AsynchronousInstrument<T>, virtual public metrics_api::SumObserver<T>
  {
 
  public:
@@ -112,6 +117,10 @@
        }
        this->mu_.unlock();
    }
+     
+     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
+        // noop for now
+     }
 
      /*
       * Activate the intsrument's callback function to record a measurement.  This
@@ -128,9 +137,9 @@
     // Public mapping from labels (stored as strings) to their respective aggregators
    std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
- 
+
  template <class T>
- class UpDownSumObserver : public AsynchronousInstrument<T>
+ class UpDownSumObserver : public AsynchronousInstrument<T>, virtual public metrics_api::UpDownSumObserver<T>
  {
 
  public:
@@ -159,7 +168,7 @@
          auto sp1 = std::shared_ptr<CounterAggregator<T>>(new CounterAggregator<T>(this->kind_));
          boundAggregators_[labelset]=sp1;
          sp1->update(value);
-         
+
        }
        else
        {
@@ -168,6 +177,9 @@
        this->mu_.unlock();
    }
 
+     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
+         // noop for now
+     }
      /*
       * Activate the intsrument's callback function to record a measurement.  This
       * function will be called by the specified controller at a regular interval.

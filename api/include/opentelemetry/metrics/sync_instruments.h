@@ -7,7 +7,7 @@ namespace metrics
 {
 
 template <class T>
-class BoundCounter : public BoundSynchronousInstrument<T>
+class BoundCounter : virtual public BoundSynchronousInstrument<T>
 {
 
 public:
@@ -29,7 +29,7 @@ public:
 };
 
 template <class T>
-class Counter : public SynchronousInstrument<T>
+class Counter : virtual public SynchronousInstrument<T>
 {
 
 public:
@@ -61,7 +61,7 @@ public:
 };
 
 template <class T>
-class BoundUpDownCounter : public BoundSynchronousInstrument<T>
+class BoundUpDownCounter : virtual public BoundSynchronousInstrument<T>
 {
 
 public:
@@ -83,7 +83,7 @@ public:
 };
 
 template <class T>
-class UpDownCounter : public SynchronousInstrument<T>
+class UpDownCounter : virtual public SynchronousInstrument<T>
 {
 
 public:
@@ -111,7 +111,7 @@ public:
 };
 
 template <class T>
-class BoundValueRecorder : public BoundSynchronousInstrument<T>
+class BoundValueRecorder : virtual public BoundSynchronousInstrument<T>
 {
 
 public:
@@ -134,7 +134,7 @@ public:
 
 
 template <class T>
-class ValueRecorder : public SynchronousInstrument<T>
+class ValueRecorder : virtual public SynchronousInstrument<T>
 {
 
 public:

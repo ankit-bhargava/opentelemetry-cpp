@@ -39,6 +39,8 @@ public:
     
     Aggregator() = default;
     
+    virtual ~Aggregator() = default;
+    
     /**
      * Receives a captured value from the instrument and applies it to the current aggregator value.
      *

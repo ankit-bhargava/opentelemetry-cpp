@@ -19,7 +19,7 @@
   * instrument itself.
   */
  template <class T>
- class ObserverResult
+ class ObserverResult : virtual public metrics_api::ObserverResult<T>
  {
 
  public:
@@ -31,6 +31,10 @@
    {
        instrument_.observe(value, labels);
    }
+     
+     virtual void observe(T value, const trace::KeyValueIterable &labels) {
+         //noop for now
+     }
 
  private:
      AsynchronousInstrument<T> & instrument_;

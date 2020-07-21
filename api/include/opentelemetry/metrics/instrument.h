@@ -61,7 +61,7 @@ public:
 };
 
 template <class T>
-class BoundSynchronousInstrument : public Instrument
+class BoundSynchronousInstrument : virtual public Instrument
 {
 
 public:
@@ -79,7 +79,7 @@ public:
    * @param none
    * @return void
    */
-  virtual void unbind() final {}
+  virtual void unbind() {}
 
   /**
    * Records a single synchronous metric event; a call to the aggregator
@@ -89,11 +89,11 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  virtual void update(T value) final {}
+  virtual void update(T value) {}
 };
 
 template <class T>
-class SynchronousInstrument : public Instrument
+class SynchronousInstrument : virtual public Instrument
 {
 
 public:
@@ -129,14 +129,14 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  virtual void update(T value, const trace::KeyValueIterable &labels) final {}
+  virtual void update(T value, const trace::KeyValueIterable &labels) {}
 };
 
 template <class T>
 class ObserverResult;
 
 template <class T>
-class AsynchronousInstrument : public Instrument
+class AsynchronousInstrument : virtual public Instrument
 {
 
 public:
@@ -157,7 +157,7 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return none
    */
-  virtual void update(T value, const trace::KeyValueIterable &labels) final {}
+  virtual void update(T value, const trace::KeyValueIterable &labels) {}
 
 protected:
   // Callback function which takes a pointer to an Asynchronous instrument (this) type which is
