@@ -17,7 +17,7 @@ namespace metrics
 {
 
 
-class Instrument : metrics_api::Instrument {
+class Instrument : public metrics_api::Instrument {
     
 public:
     Instrument() = default;
@@ -54,7 +54,7 @@ protected:
 };
 
 template <class T>
-class BoundSynchronousInstrument : public Instrument {
+class BoundSynchronousInstrument : public Instrument, public metrics_api::BoundSynchronousInstrument<T> {
     
 public:
     BoundSynchronousInstrument() = default;
@@ -122,7 +122,7 @@ private:
 };
 
 template <class T>
-class SynchronousInstrument : public Instrument {
+class SynchronousInstrument : public Instrument, public metrics_api::BoundSynchronousInstrument<T> {
     
 public:
     SynchronousInstrument() = default;
@@ -154,7 +154,7 @@ class ObserverResult;
 
 
 template <class T>
-class AsynchronousInstrument : public Instrument {
+class AsynchronousInstrument : public Instrument, public metrics_api::AsynchronousInstrument<T> {
     
 public:
     

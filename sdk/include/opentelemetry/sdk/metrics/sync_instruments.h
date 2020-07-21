@@ -16,7 +16,7 @@ namespace metrics
 {
 
 template <class T>
-class BoundCounter final: public BoundSynchronousInstrument<T> {
+class BoundCounter final: public BoundSynchronousInstrument<T>, public metrics_api::BoundCounter<T> {
     
 public:
     BoundCounter() = default;
@@ -50,7 +50,7 @@ public:
 };
 
 template <class T>
-class Counter final : public SynchronousInstrument<T>
+class Counter final : public SynchronousInstrument<T>, public metrics_api::Counter<T>
 {
     
 public:
@@ -109,7 +109,7 @@ public:
 
 
 template <class T>
-class BoundUpDownCounter final: public BoundSynchronousInstrument<T> {
+class BoundUpDownCounter final: public BoundSynchronousInstrument<T>, public metrics_api::BoundUpDownCounter<T> {
     
 public:
     BoundUpDownCounter() = default;
@@ -138,7 +138,7 @@ public:
 };
 
 template <class T>
-class UpDownCounter final : public SynchronousInstrument<T>
+class UpDownCounter final : public SynchronousInstrument<T>, public metrics_api::UpDownCounter<T>
 {
     
 public:
@@ -195,7 +195,7 @@ public:
 };
 
 template <class T>
-class BoundValueRecorder final: public BoundSynchronousInstrument<T> {
+class BoundValueRecorder final: public BoundSynchronousInstrument<T> , public metrics_api::BoundValueRecorder<T>{
     
 public:
     BoundValueRecorder() = default;
@@ -223,7 +223,7 @@ public:
 };
 
 template <class T>
-class ValueRecorder final : public SynchronousInstrument<T>
+class ValueRecorder final : public SynchronousInstrument<T>, public metrics_api::ValueRecorder<T>
 {
     
 public:
