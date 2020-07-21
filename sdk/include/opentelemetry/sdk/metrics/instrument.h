@@ -166,8 +166,8 @@ public:
         // noop here
     }
     
-    virtual std::vector<std::shared_ptr<Aggregator<T>>> getAggs() {
-        return std::vector<std::shared_ptr<Aggregator<T>>>();
+    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() {
+        return std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>>();
     }
     
 };

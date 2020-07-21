@@ -88,7 +88,7 @@ TEST(Counter, getAggsandnewupdate)
   EXPECT_EQ(alpha.boundInstruments_[mapToString(labels1)]->get_ref(), 0);
   EXPECT_EQ(alpha.boundInstruments_.size(), 3);
     
-    std::vector<std::shared_ptr<Aggregator<int>>> theta = alpha.getAggs();
+    std::vector<std::shared_ptr<BoundSynchronousInstrument<int>>> theta = alpha.getAggs();
     EXPECT_EQ(theta.size(),3);
 }
 

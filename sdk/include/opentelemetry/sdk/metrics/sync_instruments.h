@@ -110,10 +110,10 @@ public:
         this->mu_.unlock();
     }
     
-    virtual std::vector<std::shared_ptr<Aggregator<T>>> getAggs() override {
-        std::vector<std::shared_ptr<Aggregator<T>>> ret;
+    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
+        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val->get_aggregator());
+            ret.push_back(val);
         }
         return ret;
     }
@@ -218,10 +218,10 @@ public:
         this->mu_.unlock();
     }
     
-    virtual std::vector<std::shared_ptr<Aggregator<T>>> getAggs() override {
-        std::vector<std::shared_ptr<Aggregator<T>>> ret;
+    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
+        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val->get_aggregator());
+            ret.push_back(val);
         }
         return ret;
     }
@@ -323,10 +323,10 @@ public:
         //noop for now
     }
     
-    virtual std::vector<std::shared_ptr<Aggregator<T>>> getAggs() override {
-        std::vector<std::shared_ptr<Aggregator<T>>> ret;
+    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
+        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val->get_aggregator());
+            ret.push_back(val);
         }
         return ret;
     }
