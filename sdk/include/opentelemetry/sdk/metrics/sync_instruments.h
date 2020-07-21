@@ -110,10 +110,10 @@ public:
         this->mu_.unlock();
     }
     
-    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
-        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val);
+    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> getBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+        for (auto const& x : boundInstruments_){
+            ret[x.first] = x.second;
         }
         return ret;
     }
@@ -218,10 +218,10 @@ public:
         this->mu_.unlock();
     }
     
-    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
-        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val);
+    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> getBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+        for (auto const& x : boundInstruments_){
+            ret[x.first] = x.second;
         }
         return ret;
     }
@@ -323,10 +323,10 @@ public:
         //noop for now
     }
     
-    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() override {
-        std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for( auto const& [key, val] : boundInstruments_ ){
-            ret.push_back(val);
+    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> getBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+        for (auto const& x : boundInstruments_){
+            ret[x.first] = x.second;
         }
         return ret;
     }

@@ -166,8 +166,9 @@ public:
         // noop here
     }
     
-    virtual std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>> getAggs() {
-        return std::vector<std::shared_ptr<BoundSynchronousInstrument<T>>>();
+    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> getBoundInstruments() {
+        return std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>>();
+        
     }
     
 };
