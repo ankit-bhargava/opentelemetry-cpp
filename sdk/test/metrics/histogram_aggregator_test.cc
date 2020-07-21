@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <numeric>
+#include <iostream>
 // #include <chrono>
 
 namespace metrics_api = opentelemetry::metrics;
@@ -18,6 +19,8 @@ TEST(Histogram, Uniform)
 {
     std::vector<double> boundaries{10,20,30,40,50};
     HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, boundaries);
+    
+    EXPECT_EQ(alpha.get_aggregator_kind(), AggregatorKind::Histogram);
     
     alpha.checkpoint();
     EXPECT_EQ(alpha.get_checkpoint().size(),2);
@@ -70,6 +73,7 @@ TEST(Histogram, Merge){
     for (int i : otherVals){
         beta.update(i);
     }
+    
     alpha.merge(beta);
     alpha.checkpoint();
     
@@ -127,6 +131,18 @@ TEST(Histogram, Concurrency){
     
     EXPECT_EQ(alpha.get_checkpoint(), beta.get_checkpoint());
     EXPECT_EQ(alpha.get_counts(), beta.get_counts());
+}
+
+TEST(Histogram, Errors){
+    std::vector<double> boundaries{2,4,6,8,10,12};
+    std::vector<double> boundaries2{1,4,6,8,10,12};
+    std::vector<double> unsortedBoundaries{10,12,4,6,8};
+    EXPECT_ANY_THROW(HistogramAggregator<int> alpha(metrics_api::InstrumentKind::Counter, unsortedBoundaries));
+    
+    HistogramAggregator<int> beta(metrics_api::InstrumentKind::Counter, boundaries);
+    HistogramAggregator<int> gamma(metrics_api::InstrumentKind::Counter, boundaries2);
+    
+    EXPECT_ANY_THROW(beta.merge(gamma));
 }
 
 

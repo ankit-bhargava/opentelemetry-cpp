@@ -1,13 +1,13 @@
 #pragma once
 
-#include "opentelemetry/version.h"
+#include <algorithm>
+#include <mutex>
 #include "opentelemetry/metrics/instrument.h"
+#include "opentelemetry/version.h"
 #include "opentelemetry/sdk/metrics/aggregator/aggregator.h"
-
+#include <stdexcept>
 #include <variant>
 #include <vector>
-#include <mutex>
-#include <memory>
 
 namespace metrics_api = opentelemetry::metrics;
 
@@ -16,6 +16,7 @@ namespace sdk
 {
 namespace metrics
 {
+
 template<class T>
 class HistogramAggregator final : public Aggregator<T>
 {
@@ -31,6 +32,9 @@ public:
      */
     HistogramAggregator(metrics_api::InstrumentKind kind, std::vector<double> boundaries)
     {
+        if (!std::is_sorted(boundaries.begin(),boundaries.end())){
+            throw std::invalid_argument("Histogram boundaries must be monotonic.");
+        }
         this->kind_ = kind;
         this->agg_kind_ = AggregatorKind::Histogram;
         boundaries_   = boundaries;
@@ -41,15 +45,19 @@ public:
     
     /**
      * Recieves a captured value from the instrument and inserts it into the current histogram counts.
-     * Depending on the use case, linear search or binary search based implementations may be preferred.
-     * In a uniformly distributed dataset, linear search outperforms binary search until 512 buckets.
+     *
+     * Depending on the use case, a linear search or binary search based implementation may be preferred.
+     * In uniformly distributed datasets, linear search outperforms binary search until 512 buckets.  However,
+     * if the distribution is strongly skewed right ( for example server latency where most values may be <10ms
+     * but the range is from 0 - 1000 ms), a linear search could be superior even with more than 500 buckets as
+     * almost all values inserted would be at the beginning of the boundaries array and thus found more quickly
+     * through linear search.
      *
      * @param val, the raw value used in aggregation
      * @return none
      */
     void update(T val) override
     {
-        
         int bucketID = boundaries_.size();
         for (int i = 0; i < boundaries_.size(); i++)
         {
@@ -61,8 +69,8 @@ public:
         }
         
         // Alternate implementation with binary search
-        //auto pos = std::lower_bound (boundaries_.begin(), boundaries_.end(), val);
-        //bucketCounts_[pos-boundaries_.begin()] += 1;
+        // auto pos = std::lower_bound (boundaries_.begin(), boundaries_.end(), val);
+        // bucketCounts_[pos-boundaries_.begin()] += 1;
         
         this->mu_.lock();
         this->values_[0] += val;
@@ -87,7 +95,7 @@ public:
     
     /**
      * Merges the values of two aggregators in a semantically accurate manner.
-     * A histogram aggregator can only be merged with another histogram aggregatos with the same boudnaries.
+     * A histogram aggregator can only be merged with another histogram aggregator that has the same boudnaries.
      * A histogram merge first adds the sum and count values then iterates over the adds the bucket counts
      * element by element.
      *
@@ -97,6 +105,15 @@ public:
     void merge(HistogramAggregator other)
     {
         this->mu_.lock();
+        
+        // Ensure that incorrect types are not merged
+        if (this->agg_kind_ != other.agg_kind_){
+            throw std::invalid_argument("Aggregators of different types cannot be merged.");
+        // Reject histogram merges with differing boundary vectors
+        } else if (other.boundaries_ != this->boundaries_){
+            throw std::invalid_argument("Histogram boundaries do not match.");
+        }
+        
         this->values_[0] += other.values_[0];
         this->values_[1] += other.values_[1];
         
@@ -115,7 +132,7 @@ public:
      */
     std::vector<T> get_checkpoint() override
     {
-        return this->checkpoint_;  // what happens if there isn't a checkpoint?
+        return this->checkpoint_;
     }
     
     /**

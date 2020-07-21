@@ -7,7 +7,6 @@
 #include <variant>
 #include <vector>
 #include <mutex>
-#include <memory>
 
 namespace metrics_api = opentelemetry::metrics;
 
@@ -65,15 +64,13 @@ public:
      */
     void merge(CounterAggregator other)
     {
-        if (this->kind_ == other.kind_)
-        {
+        if (this->agg_kind_ == other.agg_kind_) {
             this->mu_.lock();
-            this->values_[0] += other.values_[0];  // atomic operation afaik
+            this->values_[0] += other.values_[0];
             this->mu_.unlock();
         }
-        else
-        {
-            //AggregatorMismatch Exception
+        else {
+            throw std::invalid_argument("Aggregators of different types cannot be merged.");
         }
     }
     
@@ -94,7 +91,8 @@ public:
      * @param none
      * @return the present aggregator values
      */
-    std::vector<T> get_values() override{
+    std::vector<T> get_values() override
+    {
         return this->values_;
     }
     

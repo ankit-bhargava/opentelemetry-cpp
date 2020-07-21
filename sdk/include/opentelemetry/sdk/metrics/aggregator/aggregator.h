@@ -1,12 +1,12 @@
 #pragma once
 
-#include "opentelemetry/version.h"
+#include <mutex>
 #include "opentelemetry/metrics/instrument.h"
-
+#include "opentelemetry/version.h"
 #include <variant>
 #include <vector>
-#include <mutex>
-#include <memory>
+
+
 
 namespace metrics_api = opentelemetry::metrics;
 
@@ -40,7 +40,7 @@ public:
     Aggregator() = default;
     
     /**
-     * Recieves a captured value from the instrument and applies it to the current aggregator value.
+     * Receives a captured value from the instrument and applies it to the current aggregator value.
      *
      * @param val, the raw value used in aggregation
      * @return none
@@ -64,7 +64,7 @@ public:
      * @param other, the aggregator with merge with
      * @return none
      */
-    void merge(std::shared_ptr<Aggregator> other);
+    void merge(Aggregator * other);
     
     /**
      * Returns the checkpointed value
@@ -105,10 +105,12 @@ public:
     }
     
     // Custom copy constructor to handle the mutex
-    Aggregator(const Aggregator &cp) {
+    Aggregator(const Aggregator &cp)
+    {
         values_ = cp.values_;
         checkpoint_ = cp.checkpoint_;
         kind_ = cp.kind_;
+        agg_kind_ = cp.agg_kind_;
         // use default initialized mutex as they cannot be copied
     }
     
