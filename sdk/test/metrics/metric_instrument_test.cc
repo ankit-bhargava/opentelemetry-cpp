@@ -88,7 +88,7 @@ TEST(Counter, getAggsandnewupdate)
   EXPECT_EQ(alpha.boundInstruments_[mapToString(labels1)]->get_ref(), 0);
   EXPECT_EQ(alpha.boundInstruments_.size(), 3);
     
-    auto theta = alpha.getBoundInstruments();
+    auto theta = alpha.GetBoundInstruments();
     EXPECT_EQ(theta.size(),3);
 }
 

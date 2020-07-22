@@ -70,7 +70,7 @@ public:
                        void (*callback)(ObserverResult<T>))
   {}
 
-  virtual void observe(int value, const trace::KeyValueIterable &labels) {}
+  virtual void observe(T value, const trace::KeyValueIterable &labels) {}
 };
 
 }  // namespace metrics

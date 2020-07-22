@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <unordered_map>
+#include <string>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -47,7 +49,7 @@ public:
     // Return the insrument's units of measurement
     virtual nostd::string_view GetUnits() override { return unit_; }
     
-    virtual metrics_api::InstrumentKind get_kind() final { return this->kind_; }
+    virtual metrics_api::InstrumentKind GetKind() { return this->kind_; }
     
 protected:
     std::string name_;
@@ -122,7 +124,7 @@ public:
      * @param none
      * @return the aggregator assigned to this instrument
      */
-    virtual std::shared_ptr<Aggregator<T>> get_aggregator() final { return agg_; }
+    virtual std::shared_ptr<Aggregator<T>> GetAggregator() final { return agg_; }
     
 private:
     std::shared_ptr<Aggregator<T>> agg_;
@@ -166,7 +168,7 @@ public:
         // noop here
     }
     
-    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> getBoundInstruments() {
+    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
         return std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>>();
         
     }
@@ -194,14 +196,14 @@ public:
     {}
 
     virtual void observe(T value, const std::map<std::string, std::string> &labels){
-        agg_->update(value);
+        // noop
     }
 
     void (*callback_)(ObserverResult<T>);
-
-private:
-    std::shared_ptr<Aggregator<T>> agg_;
-
+    
+    virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators(){
+        return std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>>();
+    }
 
 };
 

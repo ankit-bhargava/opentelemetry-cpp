@@ -4,6 +4,8 @@
 #include "opentelemetry/sdk/metrics/instrument.h"
 #include "opentelemetry/sdk/metrics/observer_result.h"
 #include "opentelemetry/metrics/async_instruments.h"
+#include "opentelemetry/sdk/metrics/aggregator/counter_aggregator.h"
+#include "opentelemetry/sdk/metrics/aggregator/min_max_sum_count_aggregator.h"
 
 
  namespace metrics_api = opentelemetry::metrics;
@@ -66,6 +68,10 @@
      virtual void run(){
          ObserverResult<T> res(*this);
          this->callback_(res);
+     }
+     
+     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+         return boundAggregators_;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
@@ -133,6 +139,10 @@
          ObserverResult<T> res(*this);
          this->callback_(res);
      }
+     
+     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+         return boundAggregators_;
+     }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
    std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
@@ -190,6 +200,10 @@
      virtual void run(){
          ObserverResult<T> res(*this);
          this->callback_(res);
+     }
+     
+     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+         return boundAggregators_;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
