@@ -167,8 +167,8 @@ public:
     virtual void update(T value, const trace::KeyValueIterable &labels) override = 0;
     
     // SDK ONLY FUNCTION
-    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() {
-        return std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>>();
+    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
+        return std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>>();
     }
     
 };

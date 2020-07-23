@@ -108,8 +108,8 @@ public:
      * @param labels the set of labels, as key-value pairs
      */
     
-    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for (auto x : boundInstruments_){
             //ret[x.first] = x.second;
         }
@@ -208,8 +208,8 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
 //            ret[x.first] = x.second;
         }
@@ -306,8 +306,8 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
 //            ret[x.first] = x.second;
         }
