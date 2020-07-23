@@ -4,7 +4,6 @@
 #include "opentelemetry/nostd/shared_ptr.h"
 #include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/trace/key_value_iterable_view.h"
-#include <memory>
 #include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
@@ -45,7 +44,7 @@ public:
              nostd::string_view description,
              nostd::string_view unit,
              bool enabled)
-    { std::cerr <<"Inside API Instrument Ctor" <<std::endl;}
+    {}
 
   // Returns true if the instrument is enabled and collecting data
   virtual bool IsEnabled() = 0;
@@ -86,9 +85,7 @@ public:
    */
   virtual void unbind() {}
     
-    virtual void inc_ref () {
-        std::cerr <<"API INCREF"  <<std::endl;
-    }
+    virtual void inc_ref () {}
 
   /**
    * Records a single synchronous metric event; a call to the aggregator
@@ -101,7 +98,6 @@ public:
   virtual void update(T value) {}
     
     virtual int get_ref() {
-        std::cerr <<"API GETREF"  <<std::endl;
         return 0;
     }
 };
@@ -117,7 +113,7 @@ public:
                         nostd::string_view description,
                         nostd::string_view unit,
                         bool enabled)
-  { std::cerr <<"Inside API Synchronous Instrument Ctor" <<std::endl; }
+  { }
 
   /**
    * Returns a Bound Instrument associated with the specified labels.         * Multiples requests
@@ -129,8 +125,8 @@ public:
    * @param labels the set of labels, as key-value pairs
    * @return a Bound Instrument
    */
-    virtual std::shared_ptr<BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) {
-        return std::shared_ptr<BoundSynchronousInstrument<T>>();
+    virtual nostd::shared_ptr<BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) {
+        return nostd::shared_ptr<BoundSynchronousInstrument<T>>();
     }
 
   /**

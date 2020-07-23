@@ -45,8 +45,8 @@
        std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
-         auto sp1 = std::shared_ptr<MinMaxSumCountAggregator<T>>(new MinMaxSumCountAggregator<T>(this->kind_));
-         boundAggregators_[labelset]=sp1;
+         auto sp1 = nostd::shared_ptr<Aggregator<T>>(new MinMaxSumCountAggregator<T>(this->kind_));
+         boundAggregators_.insert(std::make_pair(labelset, sp1));
          sp1->update(value);
        }
        else
@@ -68,12 +68,12 @@
          this->callback_(res);
      }
 
-     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
-   std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
+   std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
 
 
@@ -104,8 +104,8 @@
        std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
-         auto sp1 = std::shared_ptr<CounterAggregator<T>>(new CounterAggregator<T>(this->kind_));
-         boundAggregators_[labelset]=sp1;
+         auto sp1 = nostd::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(this->kind_));
+         boundAggregators_.insert(std::make_pair(labelset, sp1));
          if (value < 0){
              throw std::invalid_argument("Counter instrument updates must be non-negative.");
          } else {
@@ -136,12 +136,12 @@
      }
 
 
-     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
-   std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
+   std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
 
  template <class T>
@@ -171,10 +171,9 @@
        std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
-         auto sp1 = std::shared_ptr<CounterAggregator<T>>(new CounterAggregator<T>(this->kind_));
-         boundAggregators_[labelset]=sp1;
+         auto sp1 = nostd::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(this->kind_));
+         boundAggregators_.insert(std::make_pair(labelset, sp1));
          sp1->update(value);
-
        }
        else
        {
@@ -195,12 +194,12 @@
          this->callback_(res);
      }
 
-     virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
-   std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
+   std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
 
 

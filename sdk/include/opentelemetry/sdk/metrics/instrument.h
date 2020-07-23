@@ -27,10 +27,6 @@ class Instrument : virtual public metrics_api::Instrument {
 public:
     Instrument() = default;
     
-    Instrument (int val){
-        std::cerr <<"Inside CUSTOM SDK Instrument Ctor" <<std::endl;
-    }
-    
     Instrument(nostd::string_view name,
                nostd::string_view description,
                nostd::string_view unit,
@@ -77,7 +73,7 @@ public:
                                nostd::string_view unit,
                                bool enabled,
                                metrics_api::InstrumentKind kind,
-                               std::shared_ptr<Aggregator<T>> agg)
+                               nostd::shared_ptr<Aggregator<T>> agg)
     :Instrument(name, description, unit, enabled, kind), agg_(agg)
     { this->inc_ref(); } // increase reference count when instantiated
     
@@ -133,10 +129,10 @@ public:
      * @param none
      * @return the aggregator assigned to this instrument
      */
-    virtual std::shared_ptr<Aggregator<T>> GetAggregator() final { return agg_; }
+    virtual nostd::shared_ptr<Aggregator<T>> GetAggregator() final { return agg_; }
     
 private:
-    std::shared_ptr<Aggregator<T>> agg_;
+    nostd::shared_ptr<Aggregator<T>> agg_;
     int ref_ = 0;
 };
 
@@ -164,15 +160,15 @@ public:
      * @param labels the set of labels, as key-value pairs
      * @return a Bound Instrument
      */
-    virtual std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) override {
-        return std::shared_ptr<BoundSynchronousInstrument<T>>();
+    virtual nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) override {
+        return nostd::shared_ptr<BoundSynchronousInstrument<T>>();
     }
     
     virtual void update(T value, const trace::KeyValueIterable &labels) override = 0;
     
     // SDK ONLY FUNCTION
-    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() {
-        return std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>>();
+    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() {
+        return std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>>();
     }
     
 };
@@ -197,7 +193,7 @@ public:
 
     virtual void observe(T value, const trace::KeyValueIterable &labels) override = 0;
 
-    virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
     
     virtual void run() override = 0;
 };

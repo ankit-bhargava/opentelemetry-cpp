@@ -29,7 +29,7 @@ public:
                     nostd::string_view unit,
                     bool enabled):
                     BoundSynchronousInstrument<T>(name, description, unit, enabled,
-                                                   metrics_api::InstrumentKind::Counter,std::shared_ptr<Aggregator<T>>(new
+                                                   metrics_api::InstrumentKind::Counter,nostd::shared_ptr<Aggregator<T>>(new
                                                    CounterAggregator<T>(metrics_api::InstrumentKind::Counter))) // Aggregator is chosen here
     {}
 
@@ -75,12 +75,12 @@ public:
      * @return a BoundCounter tied to the specified labels
      */
     
-    virtual std::shared_ptr<metrics_api::BoundCounter<T>> bindCounter(const trace::KeyValueIterable &labels) override {
+    virtual nostd::shared_ptr<metrics_api::BoundCounter<T>> bindCounter(const trace::KeyValueIterable &labels) override {
         //std::cerr <<"SDK BINDCOUNTER" <<std::endl;
         std::string labelset = KvToString(labels);
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
-            auto sp1 = std::shared_ptr<BoundCounter<T>>(new BoundCounter<T>(this->name_, this->description_, this->unit_, this->enabled_));
+            auto sp1 = nostd::shared_ptr<metrics_api::BoundCounter<T>>(new BoundCounter<T>(this->name_, this->description_, this->unit_, this->enabled_));
             boundInstruments_[labelset]=sp1;
             return sp1;
         }
@@ -107,15 +107,11 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(T value, const std::map<std::string, std::string> &labels)
-    {
-        // noop for now
-    }
     
-    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
         for (auto x : boundInstruments_){
-            ret[x.first] = x.second;
+            //ret[x.first] = x.second;
         }
         return ret;
     }
@@ -125,7 +121,7 @@ public:
     }
 
     // A collection of the bound instruments created by this unbound instrument identified by their labels.
-    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundCounter<T>>> boundInstruments_;
+    std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundCounter<T>>> boundInstruments_;
 };
 
 
@@ -141,7 +137,7 @@ public:
                           bool enabled):
                           BoundSynchronousInstrument<T>(name, description, unit, enabled,
                                                         metrics_api::InstrumentKind::UpDownCounter,
-                                                        std::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(metrics_api::InstrumentKind::UpDownCounter)))
+                                                        nostd::shared_ptr<Aggregator<T>>(new CounterAggregator<T>(metrics_api::InstrumentKind::UpDownCounter)))
     {}
 
     /*
@@ -179,12 +175,12 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<metrics_api::BoundUpDownCounter<T>> bindUpDownCounter(const trace::KeyValueIterable &labels) override
+    nostd::shared_ptr<metrics_api::BoundUpDownCounter<T>> bindUpDownCounter(const trace::KeyValueIterable &labels) override
     {
         std::string labelset = KvToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
-            auto sp1 = std::make_shared<BoundUpDownCounter<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            auto sp1 = nostd::shared_ptr<metrics_api::BoundUpDownCounter<T>>(new BoundUpDownCounter<T>(this->name_, this->description_, this->unit_, this->enabled_));
             boundInstruments_[labelset]=sp1;  // perhaps use emplace
             return sp1;
         }
@@ -212,10 +208,10 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
-            ret[x.first] = x.second;
+//            ret[x.first] = x.second;
         }
         return ret;
     }
@@ -225,7 +221,7 @@ public:
     }
 
 
-    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundUpDownCounter<T>>> boundInstruments_;
+    std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundUpDownCounter<T>>> boundInstruments_;
 };
 
 template <class T>
@@ -239,7 +235,7 @@ public:
                           nostd::string_view unit,
                           bool enabled): BoundSynchronousInstrument<T>(name, description, unit, enabled,
                                                                        metrics_api::InstrumentKind::ValueRecorder,
-                                                                       std::shared_ptr<Aggregator<T>>(new MinMaxSumCountAggregator<T>(metrics_api::InstrumentKind::ValueRecorder))) // Aggregator is chosen here
+                                                                       nostd::shared_ptr<Aggregator<T>>(new MinMaxSumCountAggregator<T>(metrics_api::InstrumentKind::ValueRecorder))) // Aggregator is chosen here
     {}
 
     /*
@@ -277,12 +273,12 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<metrics_api::BoundValueRecorder<T>> bindValueRecorder(const trace::KeyValueIterable &labels) override
+    nostd::shared_ptr<metrics_api::BoundValueRecorder<T>> bindValueRecorder(const trace::KeyValueIterable &labels) override
     {
         std::string labelset = KvToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
-            auto sp1 = std::make_shared<BoundValueRecorder<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            auto sp1 = nostd::shared_ptr<metrics_api::BoundValueRecorder<T>>(new BoundValueRecorder<T>(this->name_, this->description_, this->unit_, this->enabled_));
             boundInstruments_[labelset]=sp1;  // perhaps use emplace
             return sp1;
         }
@@ -310,10 +306,10 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
-            ret[x.first] = x.second;
+//            ret[x.first] = x.second;
         }
         return ret;
     }
@@ -322,7 +318,7 @@ public:
         record(value, labels);
     }
 
-    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundValueRecorder<T>>> boundInstruments_;
+    std::unordered_map<std::string, nostd::shared_ptr<metrics_api::BoundValueRecorder<T>>> boundInstruments_;
 };
 
 }

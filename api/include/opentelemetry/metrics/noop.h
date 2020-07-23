@@ -146,9 +146,9 @@ public:
                  bool /*enabled*/)
   {}
 
-  std::shared_ptr<BoundNoopCounter<T>> bindNoopCounter(const trace::KeyValueIterable & /*labels*/)
+  nostd::shared_ptr<BoundNoopCounter<T>> bindNoopCounter(const trace::KeyValueIterable & /*labels*/)
   {
-    return std::shared_ptr<BoundNoopCounter<T>>(new BoundNoopCounter<T>());
+    return nostd::shared_ptr<BoundNoopCounter<T>>(new BoundNoopCounter<T>());
   }
 
   virtual void add(T value, const trace::KeyValueIterable & /*labels*/) override {}
@@ -225,9 +225,9 @@ public:
                        bool /*enabled*/)
   {}
 
-  std::shared_ptr<BoundNoopUpDownCounter<T>> bindNoopUpDownCounter(const trace::KeyValueIterable & /*labels*/)
+  nostd::shared_ptr<BoundNoopUpDownCounter<T>> bindNoopUpDownCounter(const trace::KeyValueIterable & /*labels*/)
   {
-    return std::shared_ptr<BoundNoopUpDownCounter<T>>(new BoundNoopUpDownCounter<T>());
+    return nostd::shared_ptr<BoundNoopUpDownCounter<T>>(new BoundNoopUpDownCounter<T>());
   }
 
   virtual void add(T value, const trace::KeyValueIterable & /*labels*/) override {}
@@ -303,9 +303,9 @@ public:
                        bool /*enabled*/)
   {}
 
-  std::shared_ptr<BoundNoopValueRecorder<T>> bindNoopValueRecorder(const trace::KeyValueIterable & /*labels*/)
+  nostd::shared_ptr<BoundNoopValueRecorder<T>> bindNoopValueRecorder(const trace::KeyValueIterable & /*labels*/)
   {
-    return std::shared_ptr<BoundNoopValueRecorder<T>>(new BoundNoopValueRecorder<T>());
+    return nostd::shared_ptr<BoundNoopValueRecorder<T>>(new BoundNoopValueRecorder<T>());
   }
 
   virtual void record(T value, const trace::KeyValueIterable & /*labels*/) override {}
