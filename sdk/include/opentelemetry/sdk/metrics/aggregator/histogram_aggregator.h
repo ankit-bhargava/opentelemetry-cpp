@@ -154,7 +154,7 @@ public:
      */
     std::vector<double> get_boundaries()
     {
-        return bucketCounts_;
+        return boundaries_;
     }
     
     /**
