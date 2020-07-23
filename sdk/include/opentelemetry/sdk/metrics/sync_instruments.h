@@ -8,6 +8,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 namespace metrics_api = opentelemetry::metrics;
 
@@ -18,7 +19,7 @@ namespace metrics
 {
 
 template <class T>
-class BoundCounter final: virtual public BoundSynchronousInstrument<T>, virtual public metrics_api::BoundCounter<T> {
+class BoundCounter final: public BoundSynchronousInstrument<T>, public metrics_api::BoundCounter<T> {
 
 public:
     BoundCounter() = default;
@@ -52,7 +53,7 @@ public:
 };
 
 template <class T>
-class Counter final : virtual public SynchronousInstrument<T>, virtual public metrics_api::Counter<T>
+class Counter final : public SynchronousInstrument<T>, public metrics_api::Counter<T>
 {
 
 public:
@@ -73,12 +74,13 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundCounter tied to the specified labels
      */
-    std::shared_ptr<BoundCounter<T>> bind(const std::map<std::string, std::string> &labels)
-    {
-        std::string labelset = mapToString(labels);
+    
+    virtual std::shared_ptr<metrics_api::BoundCounter<T>> bindCounter(const trace::KeyValueIterable &labels) override {
+        //std::cerr <<"SDK BINDCOUNTER" <<std::endl;
+        std::string labelset = KvToString(labels);
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
-            auto sp1 = std::make_shared<BoundCounter<T>>(this->name_, this->description_, this->unit_, this->enabled_);
+            auto sp1 = std::shared_ptr<BoundCounter<T>>(new BoundCounter<T>(this->name_, this->description_, this->unit_, this->enabled_));
             boundInstruments_[labelset]=sp1;
             return sp1;
         }
@@ -90,7 +92,11 @@ public:
     }
     
     virtual void add(T value, const trace::KeyValueIterable &labels) override {
-        //noop for now
+        this->mu_.lock();
+        auto sp = bindCounter(labels);
+        sp->update(value);
+        sp->unbind();
+        this->mu_.unlock();
     }
 
     /*
@@ -103,41 +109,33 @@ public:
      */
     void add(T value, const std::map<std::string, std::string> &labels)
     {
-        this->mu_.lock();
-        auto sp = bind(labels);
-        sp->update(value);
-        sp->unbind();
-        this->mu_.unlock();
+        // noop for now
     }
     
-    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for (auto const& x : boundInstruments_){
+    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
+        for (auto x : boundInstruments_){
             ret[x.first] = x.second;
         }
         return ret;
     }
     
-    virtual void update(T val, const std::map<std::string, std::string> &labels) override {
-        add(val, labels);
-    }
-    
-    void update(T value, const trace::KeyValueIterable &labels) override {
-        // noop for now
+    virtual void update(T value, const trace::KeyValueIterable &labels) override {
+        add(value, labels);
     }
 
     // A collection of the bound instruments created by this unbound instrument identified by their labels.
-    std::unordered_map<std::string, std::shared_ptr<BoundCounter<T>>> boundInstruments_;
+    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundCounter<T>>> boundInstruments_;
 };
 
 
 template <class T>
-class BoundUpDownCounter final: virtual public BoundSynchronousInstrument<T>, virtual public metrics_api::BoundUpDownCounter<T> {
+class BoundUpDownCounter final: public BoundSynchronousInstrument<T>, virtual public metrics_api::BoundUpDownCounter<T> {
 
 public:
-    BoundUpDownCounter() = default;
+    BoundUpDownCounter<T>() = default;
 
-    BoundUpDownCounter(nostd::string_view name,
+    BoundUpDownCounter<T>(nostd::string_view name,
                           nostd::string_view description,
                           nostd::string_view unit,
                           bool enabled):
@@ -161,7 +159,7 @@ public:
 };
 
 template <class T>
-class UpDownCounter final : virtual public SynchronousInstrument<T>, virtual public metrics_api::UpDownCounter<T>
+class UpDownCounter final : public SynchronousInstrument<T>, public metrics_api::UpDownCounter<T>
 {
 
 public:
@@ -181,9 +179,9 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<BoundUpDownCounter<T>> bind(const std::map<std::string, std::string> &labels)
+    std::shared_ptr<metrics_api::BoundUpDownCounter<T>> bindUpDownCounter(const trace::KeyValueIterable &labels) override
     {
-        std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
+        std::string labelset = KvToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
             auto sp1 = std::make_shared<BoundUpDownCounter<T>>(this->name_, this->description_, this->unit_, this->enabled_);
@@ -197,10 +195,6 @@ public:
         }
     }
 
-    virtual void add(T value, const trace::KeyValueIterable &labels) override {
-        //noop for now
-    }
-
     /*
      * Add adds the value to the counter's sum. The labels should contain
      * the keys and values to be associated with this value.  Counters only     * accept positive
@@ -209,36 +203,33 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void add(T value, const std::map<std::string, std::string> &labels)
+    void add(T value, const trace::KeyValueIterable &labels) override
     {
         this->mu_.lock();
-        auto sp = bind(labels);
+        auto sp = bindUpDownCounter(labels);
         sp->update(value);
         sp->unbind();
         this->mu_.unlock();
     }
-    
-    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+
+    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
             ret[x.first] = x.second;
         }
         return ret;
     }
-    
-    virtual void update(T val, const std::map<std::string, std::string> &labels) override {
+
+    virtual void update(T val, const trace::KeyValueIterable &labels) override {
         add(val, labels);
     }
-    
-    virtual void update(T value, const trace::KeyValueIterable &labels) override {
-        // noop for now
-    }
 
-    std::unordered_map<std::string, std::shared_ptr<BoundUpDownCounter<T>>> boundInstruments_;
+
+    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundUpDownCounter<T>>> boundInstruments_;
 };
 
 template <class T>
-class BoundValueRecorder final: virtual public BoundSynchronousInstrument<T> , virtual public metrics_api::BoundValueRecorder<T>{
+class BoundValueRecorder final: public BoundSynchronousInstrument<T> , public metrics_api::BoundValueRecorder<T>{
 
 public:
     BoundValueRecorder() = default;
@@ -266,7 +257,7 @@ public:
 };
 
 template <class T>
-class ValueRecorder final : virtual public SynchronousInstrument<T>, virtual public metrics_api::ValueRecorder<T>
+class ValueRecorder final : public SynchronousInstrument<T>, public metrics_api::ValueRecorder<T>
 {
 
 public:
@@ -286,9 +277,9 @@ public:
      * @param labels the set of labels, as key-value pairs.
      * @return a BoundIntCounter tied to the specified labels
      */
-    std::shared_ptr<BoundValueRecorder<T>> bind(const std::map<std::string, std::string> &labels)
+    std::shared_ptr<metrics_api::BoundValueRecorder<T>> bindValueRecorder(const trace::KeyValueIterable &labels) override
     {
-        std::string labelset = mapToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
+        std::string labelset = KvToString(labels); // COULD CUSTOM HASH THIS INSTEAD FOR PERFORMANCE
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
             auto sp1 = std::make_shared<BoundValueRecorder<T>>(this->name_, this->description_, this->unit_, this->enabled_);
@@ -310,36 +301,28 @@ public:
      * @param value the numerical representation of the metric being captured
      * @param labels the set of labels, as key-value pairs
      */
-    void record(T value, const std::map<std::string, std::string> &labels)
+    void record(T value, const trace::KeyValueIterable &labels) override
     {
         this->mu_.lock();
-        auto sp = bind(labels);
+        auto sp = bindValueRecorder(labels);
         sp->update(value);
         sp->unbind();
         this->mu_.unlock();
     }
 
-    virtual void record(T value, const trace::KeyValueIterable &labels) override {
-        //noop for now
-    }
-    
-    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+        std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> ret;
         for (auto const& x : boundInstruments_){
             ret[x.first] = x.second;
         }
         return ret;
     }
-    
-    virtual void update(T val, const std::map<std::string, std::string> &labels) override {
-        record(val, labels);
-    }
-    
+
     virtual void update(T value, const trace::KeyValueIterable &labels) override {
-        // noop for now
+        record(value, labels);
     }
 
-    std::unordered_map<std::string, std::shared_ptr<BoundValueRecorder<T>>> boundInstruments_;
+    std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundValueRecorder<T>>> boundInstruments_;
 };
 
 }

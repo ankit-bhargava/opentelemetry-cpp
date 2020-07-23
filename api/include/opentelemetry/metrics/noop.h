@@ -6,94 +6,94 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace metrics
 {
 
-template <class T>
-class NoopValueObserver : public ValueObserver<T>
-{
-
-public:
-  NoopValueObserver(nostd::string_view /*name*/,
-                       nostd::string_view /*description*/,
-                       nostd::string_view /*unit*/,
-                       bool /*enabled*/,
-                       void (*callback)(ObserverResult<T>)) {}
-
-  virtual bool IsEnabled() override {
-    return false;
-  }
-
-  virtual nostd::string_view GetName() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetDescription() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetUnits() override {
-    return nostd::string_view("");
-  }
-
-};
-
-
-template <class T>
-class NoopSumObserver : public SumObserver<T>
-{
-
-public:
-  NoopSumObserver(nostd::string_view /*name*/,
-                     nostd::string_view /*description*/,
-                     nostd::string_view /*unit*/,
-                     bool /*enabled*/,
-                     void (*callback)(ObserverResult<T>))
-  {}
-
-  virtual bool IsEnabled() override {
-    return false;
-  }
-
-  virtual nostd::string_view GetName() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetDescription() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetUnits() override {
-    return nostd::string_view("");
-  }
-};
-
-
-template <class T>
-class NoopUpDownSumObserver : public UpDownSumObserver<T>
-{
-
-public:
-  NoopUpDownSumObserver(nostd::string_view /*name*/,
-                           nostd::string_view /*description*/,
-                           nostd::string_view /*unit*/,
-                           bool /*enabled*/,
-                           void (*callback)(ObserverResult<T>))
-  {}
-
-  virtual bool IsEnabled() override {
-    return false;
-  }
-
-  virtual nostd::string_view GetName() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetDescription() override {
-    return nostd::string_view("");
-  }
-
-  virtual nostd::string_view GetUnits() override {
-    return nostd::string_view("");
-  }
-};
+//template <class T>
+//class NoopValueObserver : public ValueObserver<T>
+//{
+//
+//public:
+//  NoopValueObserver(nostd::string_view /*name*/,
+//                       nostd::string_view /*description*/,
+//                       nostd::string_view /*unit*/,
+//                       bool /*enabled*/,
+//                       void (*callback)(ObserverResult<T>)) {}
+//
+//  virtual bool IsEnabled() override {
+//    return false;
+//  }
+//
+//  virtual nostd::string_view GetName() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetDescription() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetUnits() override {
+//    return nostd::string_view("");
+//  }
+//
+//};
+//
+//
+//template <class T>
+//class NoopSumObserver : public SumObserver<T>
+//{
+//
+//public:
+//  NoopSumObserver(nostd::string_view /*name*/,
+//                     nostd::string_view /*description*/,
+//                     nostd::string_view /*unit*/,
+//                     bool /*enabled*/,
+//                     void (*callback)(ObserverResult<T>))
+//  {}
+//
+//  virtual bool IsEnabled() override {
+//    return false;
+//  }
+//
+//  virtual nostd::string_view GetName() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetDescription() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetUnits() override {
+//    return nostd::string_view("");
+//  }
+//};
+//
+//
+//template <class T>
+//class NoopUpDownSumObserver : public UpDownSumObserver<T>
+//{
+//
+//public:
+//  NoopUpDownSumObserver(nostd::string_view /*name*/,
+//                           nostd::string_view /*description*/,
+//                           nostd::string_view /*unit*/,
+//                           bool /*enabled*/,
+//                           void (*callback)(ObserverResult<T>))
+//  {}
+//
+//  virtual bool IsEnabled() override {
+//    return false;
+//  }
+//
+//  virtual nostd::string_view GetName() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetDescription() override {
+//    return nostd::string_view("");
+//  }
+//
+//  virtual nostd::string_view GetUnits() override {
+//    return nostd::string_view("");
+//  }
+//};
 
 
 template <class T>
@@ -126,6 +126,10 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::Counter;
+    }
 
 };
 
@@ -142,9 +146,9 @@ public:
                  bool /*enabled*/)
   {}
 
-  nostd::shared_ptr<BoundNoopCounter<T>> bind(const trace::KeyValueIterable & /*labels*/)
+  std::shared_ptr<BoundNoopCounter<T>> bindNoopCounter(const trace::KeyValueIterable & /*labels*/)
   {
-    return nostd::shared_ptr<BoundNoopCounter<T>>(new BoundNoopCounter<T>());
+    return std::shared_ptr<BoundNoopCounter<T>>(new BoundNoopCounter<T>());
   }
 
   virtual void add(T value, const trace::KeyValueIterable & /*labels*/) override {}
@@ -164,6 +168,10 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::Counter;
+    }
 
 };
 
@@ -197,6 +205,10 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::UpDownCounter;
+    }
 
 };
 
@@ -213,9 +225,9 @@ public:
                        bool /*enabled*/)
   {}
 
-  nostd::shared_ptr<BoundNoopUpDownCounter<T>> bind(const trace::KeyValueIterable & /*labels*/)
+  std::shared_ptr<BoundNoopUpDownCounter<T>> bindNoopUpDownCounter(const trace::KeyValueIterable & /*labels*/)
   {
-    return nostd::shared_ptr<BoundNoopUpDownCounter<T>>(new BoundNoopUpDownCounter<T>());
+    return std::shared_ptr<BoundNoopUpDownCounter<T>>(new BoundNoopUpDownCounter<T>());
   }
 
   virtual void add(T value, const trace::KeyValueIterable & /*labels*/) override {}
@@ -235,6 +247,10 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::UpDownCounter;
+    }
 };
 
 
@@ -268,6 +284,10 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::ValueRecorder;
+    }
 };
 
 template <class T>
@@ -283,9 +303,9 @@ public:
                        bool /*enabled*/)
   {}
 
-  nostd::shared_ptr<BoundNoopValueRecorder<T>> bind(const trace::KeyValueIterable & /*labels*/)
+  std::shared_ptr<BoundNoopValueRecorder<T>> bindNoopValueRecorder(const trace::KeyValueIterable & /*labels*/)
   {
-    return nostd::shared_ptr<BoundNoopValueRecorder<T>>(new BoundNoopValueRecorder<T>());
+    return std::shared_ptr<BoundNoopValueRecorder<T>>(new BoundNoopValueRecorder<T>());
   }
 
   virtual void record(T value, const trace::KeyValueIterable & /*labels*/) override {}
@@ -305,6 +325,11 @@ public:
   virtual nostd::string_view GetUnits() override {
     return nostd::string_view("");
   }
+    
+    virtual InstrumentKind GetKind() override {
+        return InstrumentKind::ValueRecorder;
+    }
+    
 };
 
 }  // namespace metrics

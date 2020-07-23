@@ -27,13 +27,15 @@ class Instrument : virtual public metrics_api::Instrument {
 public:
     Instrument() = default;
     
+    Instrument (int val){
+        std::cerr <<"Inside CUSTOM SDK Instrument Ctor" <<std::endl;
+    }
+    
     Instrument(nostd::string_view name,
                nostd::string_view description,
                nostd::string_view unit,
                bool enabled,
-               metrics_api::InstrumentKind kind): name_(name), description_(description), unit_(unit), enabled_(enabled), kind_(kind) {
-        std::cerr <<"called instrument constructor" <<std::endl;
-    }
+               metrics_api::InstrumentKind kind): name_(name), description_(description), unit_(unit), enabled_(enabled), kind_(kind) {}
     
     // Returns true if the instrument is enabled and collecting data
     virtual bool IsEnabled() override {
@@ -41,7 +43,10 @@ public:
     }
     
     // Return the instrument name
-    virtual nostd::string_view GetName() override { return name_; }
+    virtual nostd::string_view GetName() override {
+        return name_;
+        
+    }
     
     // Return the instrument description
     virtual nostd::string_view GetDescription() override { return description_; }
@@ -49,7 +54,7 @@ public:
     // Return the insrument's units of measurement
     virtual nostd::string_view GetUnits() override { return unit_; }
     
-    virtual metrics_api::InstrumentKind GetKind() { return this->kind_; }
+    virtual metrics_api::InstrumentKind GetKind() override { return this->kind_; }
     
 protected:
     std::string name_;
@@ -61,11 +66,9 @@ protected:
 };
 
 template <class T>
-class BoundSynchronousInstrument : virtual public Instrument, virtual public metrics_api::BoundSynchronousInstrument<T> {
+class BoundSynchronousInstrument : public Instrument, virtual public metrics_api::BoundSynchronousInstrument<T> {
     
 public:
-    
-    using Instrument::Instrument;
     
     BoundSynchronousInstrument() = default;
     
@@ -85,7 +88,7 @@ public:
      * @param none
      * @return void
      */
-    virtual void unbind() final { ref_ -= 1; }
+    virtual void unbind() override { ref_ -= 1; }
     
     /**
      * Increments the reference count. This function is used when binding or instantiating.
@@ -93,7 +96,10 @@ public:
      * @param none
      * @return void
      */
-    virtual void inc_ref() final { ref_ += 1; }
+    virtual void inc_ref() override {
+        ref_ += 1;
+        //std::cerr <<"SDK INCREF"  <<std::endl;
+    }
     
     /**
      * Returns the current reference count of the instrument.  This value is used to
@@ -102,7 +108,10 @@ public:
      * @param none
      * @return current ref count of the instrument
      */
-    virtual int get_ref() final { return ref_; }
+    virtual int get_ref() override {
+        //std::cerr <<"SDK GETREF" <<std::endl;
+        return ref_;
+    }
     
     /**
      * Records a single synchronous metric event; a call to the aggregator
@@ -112,7 +121,7 @@ public:
      * @param value is the numerical representation of the metric being captured
      * @return void
      */
-    virtual void update(T value) final {
+    virtual void update(T value) override {
         this->mu_.lock();
         agg_->update(value);
         this->mu_.unlock();
@@ -132,11 +141,9 @@ private:
 };
 
 template <class T>
-class SynchronousInstrument : virtual public Instrument, virtual public metrics_api::SynchronousInstrument<T> {
+class SynchronousInstrument : public Instrument, virtual public metrics_api::SynchronousInstrument<T> {
     
 public:
-    
-    using Instrument::Instrument;
     
     SynchronousInstrument() = default;
     
@@ -144,8 +151,7 @@ public:
                           nostd::string_view description,
                           nostd::string_view unit,
                           bool enabled,
-                          metrics_api::InstrumentKind kind):
-                          Instrument(name, description, unit, enabled,  kind)
+                          metrics_api::InstrumentKind kind):Instrument(name,description,unit,enabled,kind)
     {}
     
     /**
@@ -158,53 +164,62 @@ public:
      * @param labels the set of labels, as key-value pairs
      * @return a Bound Instrument
      */
-    std::shared_ptr<BoundSynchronousInstrument<T>> bind(const nostd::string_view &labels);
-    
-    virtual void update(T value, const trace::KeyValueIterable &labels) override {
-        // noop for now
+    virtual std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) override {
+        return std::shared_ptr<BoundSynchronousInstrument<T>>();
     }
     
-    virtual void update(T val, const std::map<std::string, std::string> &labels){
-        // noop here
-    }
+    virtual void update(T value, const trace::KeyValueIterable &labels) override = 0;
     
-    virtual std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
-        return std::unordered_map<std::string, std::shared_ptr<BoundSynchronousInstrument<T>>>();
-        
+    // SDK ONLY FUNCTION
+    virtual std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>> GetBoundInstruments() {
+        return std::unordered_map<std::string, std::shared_ptr<metrics_api::BoundSynchronousInstrument<T>>>();
     }
     
 };
 
-template <class T>
-class ObserverResult;
-
 
 template <class T>
-class AsynchronousInstrument : virtual public Instrument, virtual public metrics_api::AsynchronousInstrument<T> {
+class AsynchronousInstrument : public Instrument, virtual public metrics_api::AsynchronousInstrument<T> {
 
 public:
-
     AsynchronousInstrument() = default;
 
     AsynchronousInstrument(nostd::string_view name,
                            nostd::string_view description,
                            nostd::string_view unit,
                            bool enabled,
-                           void (*callback)(ObserverResult<T>),
+                           void (*callback)(metrics_api::ObserverResult<T>),
                            metrics_api::InstrumentKind kind):
-                           Instrument(name, description, unit, enabled, kind), callback_(callback)
-    {}
-
-    virtual void observe(T value, const std::map<std::string, std::string> &labels){
-        // noop
+                           Instrument(name, description, unit, enabled, kind)
+    {
+        this->callback_ = callback;
     }
 
-    void (*callback_)(ObserverResult<T>);
+    virtual void observe(T value, const trace::KeyValueIterable &labels) override = 0;
+
+    virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
     
-    virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators(){
-        return std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>>();
-    }
+    virtual void run() override = 0;
+};
 
+static void print_value(std::stringstream &ss,
+                        common::AttributeValue &value,
+                        bool jsonTypes = false)
+{
+  switch (value.index())
+  {
+    
+    case common::AttributeType::TYPE_STRING:
+      if (jsonTypes)
+        ss << '"';
+      ss << nostd::get<nostd::string_view>(value);
+      if (jsonTypes)
+        ss << '"';
+      break;
+    default:
+          throw std::invalid_argument("Labels must be strings");
+      break;
+  }
 };
 
 // Utility function which converts maps to strings for better performance
@@ -215,6 +230,32 @@ std::string mapToString(const std::map<std::string,std::string> & conv){
         ss <<i.first <<':' <<i.second <<',';
     }
     ss <<"}";
+    return ss.str();
+}
+
+std::string KvToString(const trace::KeyValueIterable &kv) noexcept
+{
+    std::stringstream ss;
+    ss << "{";
+    size_t size = kv.size();
+    if (size)
+    {
+      size_t i = 1;
+      // TODO: we need to do something with this iterator. It is not very convenient.
+      // Having range-based for loop would've been nicer
+      kv.ForEachKeyValue([&](nostd::string_view key, common::AttributeValue value) noexcept {
+        ss << "\"" << key << "\":";
+        print_value(ss, value, true);
+        if (size != i)
+        {
+          ss << ",";
+        }
+        i++;
+        return true;
+      });
+    };
+    ss << "}";
+    ss << std::endl;
     return ss.str();
 }
 

@@ -1,11 +1,13 @@
 #pragma once
 
-#include <memory>
 #include "opentelemetry/sdk/metrics/instrument.h"
-#include "opentelemetry/sdk/metrics/observer_result.h"
 #include "opentelemetry/metrics/async_instruments.h"
-#include "opentelemetry/sdk/metrics/aggregator/counter_aggregator.h"
-#include "opentelemetry/sdk/metrics/aggregator/min_max_sum_count_aggregator.h"
+#include "opentelemetry/version.h"
+#include <stdexcept>
+#include <map>
+#include <sstream>
+#include <vector>
+#include <memory>
 
 
  namespace metrics_api = opentelemetry::metrics;
@@ -27,7 +29,7 @@
                     nostd::string_view description,
                     nostd::string_view unit,
                     bool enabled,
-                    void (*callback)(ObserverResult<T>)):
+                    void (*callback)(metrics_api::ObserverResult<T>)):
                     AsynchronousInstrument<T>(name, description, unit, enabled, callback, metrics_api::InstrumentKind::ValueObserver)
    {}
 
@@ -38,9 +40,9 @@
     * @param value is the numerical representation of the metric being captured
     * @param labels the set of labels, as key-value pairs
     */
-   virtual void observe(T value, const std::map<std::string, std::string> &labels) override {
+   virtual void observe(T value, const trace::KeyValueIterable &labels) override {
        this->mu_.lock();
-       std::string labelset = mapToString(labels);
+       std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
          auto sp1 = std::shared_ptr<MinMaxSumCountAggregator<T>>(new MinMaxSumCountAggregator<T>(this->kind_));
@@ -53,10 +55,6 @@
        }
        this->mu_.unlock();
    }
-     
-     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
-         // noop for now
-     }
 
      /*
       * Activate the intsrument's callback function to record a measurement.  This
@@ -65,11 +63,11 @@
       * @param none
       * @return none
       */
-     virtual void run(){
-         ObserverResult<T> res(*this);
+     virtual void run() override {
+         metrics_api::ObserverResult<T> res(this);
          this->callback_(res);
      }
-     
+
      virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
@@ -77,6 +75,7 @@
     // Public mapping from labels (stored as strings) to their respective aggregators
    std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
+
 
  template <class T>
  class SumObserver : public AsynchronousInstrument<T>, virtual public metrics_api::SumObserver<T>
@@ -89,7 +88,7 @@
                     nostd::string_view description,
                     nostd::string_view unit,
                     bool enabled,
-                    void (*callback)(ObserverResult<T>)):
+                    void (*callback)(metrics_api::ObserverResult<T>)):
                     AsynchronousInstrument<T>(name, description, unit, enabled, callback, metrics_api::InstrumentKind::SumObserver)
    {}
 
@@ -100,9 +99,9 @@
     * @param value is the numerical representation of the metric being captured
     * @param labels the set of labels, as key-value pairs
     */
-   virtual void observe(T value, const std::map<std::string, std::string> &labels) override {
+   virtual void observe(T value, const trace::KeyValueIterable &labels) override {
        this->mu_.lock();
-       std::string labelset = mapToString(labels);
+       std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
          auto sp1 = std::shared_ptr<CounterAggregator<T>>(new CounterAggregator<T>(this->kind_));
@@ -123,10 +122,6 @@
        }
        this->mu_.unlock();
    }
-     
-     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
-        // noop for now
-     }
 
      /*
       * Activate the intsrument's callback function to record a measurement.  This
@@ -135,11 +130,12 @@
       * @param none
       * @return none
       */
-     virtual void run(){
-         ObserverResult<T> res(*this);
+     virtual void run() override {
+         metrics_api::ObserverResult<T> res(this);
          this->callback_(res);
      }
-     
+
+
      virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
@@ -159,7 +155,7 @@
                     nostd::string_view description,
                     nostd::string_view unit,
                     bool enabled,
-                    void (*callback)(ObserverResult<T>)):
+                    void (*callback)(metrics_api::ObserverResult<T>)):
                     AsynchronousInstrument<T>(name, description, unit, enabled, callback, metrics_api::InstrumentKind::UpDownSumObserver)
    {}
 
@@ -170,9 +166,9 @@
     * @param value is the numerical representation of the metric being captured
     * @param labels the set of labels, as key-value pairs
     */
-   virtual void observe(T value, const std::map<std::string, std::string> &labels) override {
+   virtual void observe(T value, const trace::KeyValueIterable &labels) override {
        this->mu_.lock();
-       std::string labelset = mapToString(labels);
+       std::string labelset = KvToString(labels);
        if (boundAggregators_.find(labelset) == boundAggregators_.end())
        {
          auto sp1 = std::shared_ptr<CounterAggregator<T>>(new CounterAggregator<T>(this->kind_));
@@ -187,9 +183,6 @@
        this->mu_.unlock();
    }
 
-     virtual void observe(T value, const trace::KeyValueIterable &labels) override {
-         // noop for now
-     }
      /*
       * Activate the intsrument's callback function to record a measurement.  This
       * function will be called by the specified controller at a regular interval.
@@ -197,11 +190,11 @@
       * @param none
       * @return none
       */
-     virtual void run(){
-         ObserverResult<T> res(*this);
+     virtual void run() override {
+         metrics_api::ObserverResult<T> res(this);
          this->callback_(res);
      }
-     
+
      virtual std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
          return boundAggregators_;
      }
@@ -210,7 +203,8 @@
    std::unordered_map<std::string, std::shared_ptr<Aggregator<T>>> boundAggregators_;
  };
 
- }
- }
- OPENTELEMETRY_END_NAMESPACE
 
+
+}
+}
+OPENTELEMETRY_END_NAMESPACE

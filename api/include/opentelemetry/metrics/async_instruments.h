@@ -28,7 +28,10 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @param labels the set of labels, as key-value pairs
    */
-  virtual void observe(T value, const trace::KeyValueIterable &labels) {}
+  virtual void observe(T value, const trace::KeyValueIterable &labels) override {}
+    
+    virtual void run () override {}
+    
 };
 
 template <class T>
@@ -53,7 +56,10 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @param labels the set of labels, as key-value pairs
    */
-  virtual void observe(T value, const trace::KeyValueIterable &labels) {}
+  virtual void observe(T value, const trace::KeyValueIterable &labels) override {}
+    
+    virtual void run() override {}
+    
 };
 
 template <class T>
@@ -70,7 +76,10 @@ public:
                        void (*callback)(ObserverResult<T>))
   {}
 
-  virtual void observe(T value, const trace::KeyValueIterable &labels) {}
+  virtual void observe(T value, const trace::KeyValueIterable &labels) override {}
+    
+    virtual void run() override {}
+    
 };
 
 }  // namespace metrics

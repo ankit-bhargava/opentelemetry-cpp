@@ -38,7 +38,7 @@ public:
   Counter(nostd::string_view name,
              nostd::string_view description,
              nostd::string_view unit,
-             bool enabled);
+          bool enabled) {std::cerr <<"Inside API Counter Instrument Ctor" <<std::endl;}
 
   /*
    * Bind creates a bound instrument for this counter. The labels are
@@ -47,7 +47,9 @@ public:
    * @param labels the set of labels, as key-value pairs.
    * @return a BoundIntCounter tied to the specified labels
    */
-  nostd::shared_ptr<BoundCounter<T>> bind(const nostd::string_view &labels);
+    virtual std::shared_ptr<BoundCounter<T>> bindCounter(const trace::KeyValueIterable &labels) {
+        return std::shared_ptr<BoundCounter<T>>();
+    }
 
   /*
    * Add adds the value to the counter's sum. The labels should contain
@@ -94,10 +96,10 @@ public:
                    nostd::string_view unit,
                    bool enabled);
 
-  nostd::shared_ptr<BoundUpDownCounter<T>> bind(const trace::KeyValueIterable &labels);
-  //{
-  //  return nostd::shared_ptr<BoundUpDownCounter<T>>(new BoundUpDownCounter<T>());
-  //}
+    virtual std::shared_ptr<BoundUpDownCounter<T>> bindUpDownCounter(const trace::KeyValueIterable &labels)
+  {
+      return std::shared_ptr<BoundUpDownCounter<T>>();
+  }
 
   /*
    * Add adds the value to the counter's sum. The labels should contain
@@ -145,10 +147,9 @@ public:
                    nostd::string_view unit,
                    bool enabled);
 
-  nostd::shared_ptr<BoundValueRecorder<T>> bind(const trace::KeyValueIterable &labels);
-  //{
-  //  return nostd::shared_ptr<BoundValueRecorder<T>>(new BoundValueRecorder<T>());
-  //}
+    virtual std::shared_ptr<BoundValueRecorder<T>> bindValueRecorder(const trace::KeyValueIterable &labels){
+        return std::shared_ptr<BoundValueRecorder<T>>();
+    }
 
   /*
    * Records the value by summing it with previous measurements and checking  * previously stored

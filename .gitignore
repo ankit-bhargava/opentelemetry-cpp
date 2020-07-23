@@ -34,3 +34,6 @@
 
 # Bazel files
 /bazel-*
+
+.gitignore
+*.DS_Store

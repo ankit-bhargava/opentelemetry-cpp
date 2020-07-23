@@ -4,6 +4,8 @@
 #include "opentelemetry/nostd/shared_ptr.h"
 #include "opentelemetry/nostd/string_view.h"
 #include "opentelemetry/trace/key_value_iterable_view.h"
+#include <memory>
+#include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace metrics
@@ -43,7 +45,7 @@ public:
              nostd::string_view description,
              nostd::string_view unit,
              bool enabled)
-  {}
+    { std::cerr <<"Inside API Instrument Ctor" <<std::endl;}
 
   // Returns true if the instrument is enabled and collecting data
   virtual bool IsEnabled() = 0;
@@ -56,6 +58,9 @@ public:
 
   // Return the insrument's units of measurement
   virtual nostd::string_view GetUnits() = 0;
+    
+  // Return the intrument's kind
+  virtual InstrumentKind GetKind() = 0;
 
   virtual ~Instrument() = default;
 };
@@ -80,6 +85,10 @@ public:
    * @return void
    */
   virtual void unbind() {}
+    
+    virtual void inc_ref () {
+        std::cerr <<"API INCREF"  <<std::endl;
+    }
 
   /**
    * Records a single synchronous metric event; a call to the aggregator
@@ -90,6 +99,11 @@ public:
    * @return void
    */
   virtual void update(T value) {}
+    
+    virtual int get_ref() {
+        std::cerr <<"API GETREF"  <<std::endl;
+        return 0;
+    }
 };
 
 template <class T>
@@ -103,7 +117,7 @@ public:
                         nostd::string_view description,
                         nostd::string_view unit,
                         bool enabled)
-  {}
+  { std::cerr <<"Inside API Synchronous Instrument Ctor" <<std::endl; }
 
   /**
    * Returns a Bound Instrument associated with the specified labels.         * Multiples requests
@@ -115,7 +129,9 @@ public:
    * @param labels the set of labels, as key-value pairs
    * @return a Bound Instrument
    */
-  nostd::shared_ptr<BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels);
+    virtual std::shared_ptr<BoundSynchronousInstrument<T>> bind(const trace::KeyValueIterable &labels) {
+        return std::shared_ptr<BoundSynchronousInstrument<T>>();
+    }
 
   /**
    * Records a single synchronous metric event.
@@ -129,7 +145,7 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return void
    */
-  virtual void update(T value, const trace::KeyValueIterable &labels) {}
+    virtual void update(T value, const trace::KeyValueIterable &labels) {}
 };
 
 template <class T>
@@ -157,7 +173,9 @@ public:
    * @param value is the numerical representation of the metric being captured
    * @return none
    */
-  virtual void update(T value, const trace::KeyValueIterable &labels) {}
+    virtual void observe (T value, const trace::KeyValueIterable &labels) = 0;
+    
+    virtual void run() = 0;
 
 protected:
   // Callback function which takes a pointer to an Asynchronous instrument (this) type which is
