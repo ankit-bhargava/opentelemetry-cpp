@@ -198,13 +198,12 @@ public:
     virtual void run() override = 0;
 };
 
-static void print_value(std::stringstream &ss,
+inline void print_value(std::stringstream &ss,
                         common::AttributeValue &value,
                         bool jsonTypes = false)
 {
   switch (value.index())
   {
-    
     case common::AttributeType::TYPE_STRING:
       if (jsonTypes)
         ss << '"';
@@ -219,7 +218,7 @@ static void print_value(std::stringstream &ss,
 };
 
 // Utility function which converts maps to strings for better performance
-std::string mapToString(const std::map<std::string,std::string> & conv){
+inline std::string mapToString(const std::map<std::string,std::string> & conv){
     std::stringstream ss;
     ss <<"{ ";
     for (auto i:conv){
@@ -229,7 +228,7 @@ std::string mapToString(const std::map<std::string,std::string> & conv){
     return ss.str();
 }
 
-std::string KvToString(const trace::KeyValueIterable &kv) noexcept
+inline std::string KvToString(const trace::KeyValueIterable &kv) noexcept
 {
     std::stringstream ss;
     ss << "{";

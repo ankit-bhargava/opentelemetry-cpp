@@ -76,7 +76,6 @@ public:
      */
     
     virtual nostd::shared_ptr<metrics_api::BoundCounter<T>> bindCounter(const trace::KeyValueIterable &labels) override {
-        //std::cerr <<"SDK BINDCOUNTER" <<std::endl;
         std::string labelset = KvToString(labels);
         if (boundInstruments_.find(labelset) == boundInstruments_.end())
         {
