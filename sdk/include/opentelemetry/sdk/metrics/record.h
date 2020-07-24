@@ -12,24 +12,26 @@ namespace sdk
 {
 namespace metrics
 {
-using AggregatorVariant = nostd::variant<std::shared_ptr<Aggregator<short>>,
-                                         std::shared_ptr<Aggregator<int>>,
-                                         std::shared_ptr<Aggregator<float>>,
-                                         std::shared_ptr<Aggregator<double>>>;
+using AggregatorVariant = nostd::variant<nostd::shared_ptr<Aggregator<short>>,
+                                         nostd::shared_ptr<Aggregator<int>>,
+                                         nostd::shared_ptr<Aggregator<float>>,
+                                         nostd::shared_ptr<Aggregator<double>>>;
 class Record
 {
 public:
   explicit Record(nostd::string_view name, nostd::string_view description,
-                  nostd::string_view labels,
-                  AggregatorVariant aggregator): name_(name), description_(description), labels_(labels)
+                  std::string labels, AggregatorVariant aggregator)
   {
-    aggregator_ = std::move(aggregator);
+    name_ = std::string(name);
+    description_ = std::string(description);
+    labels_ = labels;
+    aggregator_ = aggregator;
   }
 
   std::string GetName() {return name_;}
   std::string GetDescription() {return description_;}
   std::string GetLabels() {return labels_;}
-  AggregatorVariant GetAggregator() {return std::move(aggregator_);}
+  AggregatorVariant GetAggregator() {return aggregator_;}
 
 private:
   std::string name_;

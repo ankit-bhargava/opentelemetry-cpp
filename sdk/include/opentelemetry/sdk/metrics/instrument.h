@@ -2,6 +2,7 @@
 
 #include "opentelemetry/metrics/instrument.h"
 #include "opentelemetry/sdk/metrics/aggregator/aggregator.h"
+#include "opentelemetry/sdk/metrics/record.h"
 #include "opentelemetry/version.h"
 
 #include <memory>
@@ -167,9 +168,11 @@ public:
     virtual void update(T value, const trace::KeyValueIterable &labels) override = 0;
     
     // SDK ONLY FUNCTION
-    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
-        return std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>>();
-    }
+//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
+//        return std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>>();
+//    }
+    
+    virtual std::vector<Record> GetRecords() = 0;
     
 };
 
@@ -193,7 +196,9 @@ public:
 
     virtual void observe(T value, const trace::KeyValueIterable &labels) override = 0;
 
-    virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
+//    virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
+    
+    virtual std::vector<Record> GetRecords() = 0;
     
     virtual void run() override = 0;
 };

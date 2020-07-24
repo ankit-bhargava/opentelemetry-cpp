@@ -68,8 +68,16 @@
          this->callback_(res);
      }
 
-     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
-         return boundAggregators_;
+//     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+//         return boundAggregators_;
+//     }
+     
+     virtual std::vector<Record> GetRecords() override {
+         std::vector<Record> ret;
+         for (auto x : boundAggregators_){
+             ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
+         }
+         return ret;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
@@ -136,8 +144,16 @@
      }
 
 
-     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
-         return boundAggregators_;
+//     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+//         return boundAggregators_;
+//     }
+     
+     virtual std::vector<Record> GetRecords() override {
+         std::vector<Record> ret;
+         for (auto x : boundAggregators_){
+             ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
+         }
+         return ret;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators
@@ -194,8 +210,16 @@
          this->callback_(res);
      }
 
-     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
-         return boundAggregators_;
+//     virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() override {
+//         return boundAggregators_;
+//     }
+     
+     virtual std::vector<Record> GetRecords() override {
+         std::vector<Record> ret;
+         for (auto x : boundAggregators_){
+             ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
+         }
+         return ret;
      }
 
     // Public mapping from labels (stored as strings) to their respective aggregators

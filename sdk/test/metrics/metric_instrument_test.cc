@@ -99,8 +99,12 @@ TEST(Counter, getAggsandnewupdate)
   EXPECT_EQ(alpha.boundInstruments_[KvToString(labelkv1)]->get_ref(), 0);
   EXPECT_EQ(alpha.boundInstruments_.size(), 3);
 
-    auto theta = alpha.GetBoundInstruments();
+    auto theta = alpha.GetRecords();
     EXPECT_EQ(theta.size(),3);
+    EXPECT_EQ(theta[0].GetName(), "test");
+    EXPECT_EQ(theta[0].GetDescription(), "none");
+    EXPECT_EQ(theta[0].GetLabels(), "{\"key2\":\"value2\",\"key3\":\"value3\"}\n");
+    EXPECT_EQ(theta[1].GetLabels(), "{\"key1\":\"value1\"}\n");
 }
 
 void CounterCallback(std::shared_ptr<Counter<int>> in, int freq, const trace::KeyValueIterable &labels){

@@ -107,10 +107,18 @@ public:
      * @param labels the set of labels, as key-value pairs
      */
     
-    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+//        for (auto x : boundInstruments_){
+//             ret[x.first] = x.second;
+//        }
+//        return ret;
+//    }
+    
+    virtual std::vector<Record> GetRecords() override {
+        std::vector<Record> ret;
         for (auto x : boundInstruments_){
-            //ret[x.first] = x.second;
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundCounter<T>*>(x.second.get())->GetAggregator()));
         }
         return ret;
     }
@@ -207,10 +215,18 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for (auto const& x : boundInstruments_){
-//            ret[x.first] = x.second;
+//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+//        for (auto const& x : boundInstruments_){
+////            ret[x.first] = x.second;
+//        }
+//        return ret;
+//    }
+    
+    virtual std::vector<Record> GetRecords() override {
+        std::vector<Record> ret;
+        for (auto x : boundInstruments_){
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundUpDownCounter<T>*>(x.second.get())->GetAggregator()));
         }
         return ret;
     }
@@ -305,10 +321,18 @@ public:
         this->mu_.unlock();
     }
 
-    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-        for (auto const& x : boundInstruments_){
-//            ret[x.first] = x.second;
+//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
+//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
+//        for (auto const& x : boundInstruments_){
+////            ret[x.first] = x.second;
+//        }
+//        return ret;
+//    }
+    
+    virtual std::vector<Record> GetRecords() override {
+        std::vector<Record> ret;
+        for (auto x : boundInstruments_){
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundValueRecorder<T>*>(x.second.get())->GetAggregator()));
         }
         return ret;
     }
