@@ -40,10 +40,7 @@ public:
     }
     
     // Return the instrument name
-    virtual nostd::string_view GetName() override {
-        return name_;
-        
-    }
+    virtual nostd::string_view GetName() override { return name_; }
     
     // Return the instrument description
     virtual nostd::string_view GetDescription() override { return description_; }
@@ -93,10 +90,7 @@ public:
      * @param none
      * @return void
      */
-    virtual void inc_ref() override {
-        ref_ += 1;
-        //std::cerr <<"SDK INCREF"  <<std::endl;
-    }
+    virtual void inc_ref() override { ref_ += 1; }
     
     /**
      * Returns the current reference count of the instrument.  This value is used to
@@ -105,10 +99,7 @@ public:
      * @param none
      * @return current ref count of the instrument
      */
-    virtual int get_ref() override {
-        //std::cerr <<"SDK GETREF" <<std::endl;
-        return ref_;
-    }
+    virtual int get_ref() override { return ref_; }
     
     /**
      * Records a single synchronous metric event; a call to the aggregator
@@ -167,11 +158,13 @@ public:
     
     virtual void update(T value, const trace::KeyValueIterable &labels) override = 0;
     
-    // SDK ONLY FUNCTION
-//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() {
-//        return std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>>();
-//    }
-    
+    /**
+     * Checkpoints instruments and returns a set of records which are ready for processing.
+     * This method should only be called by the Meter Class as part of the export pipeline.
+     *
+     * @param none
+     * @return vector of Records which hold the data attached to this synchronous instrument
+     */
     virtual std::vector<Record> GetRecords() = 0;
     
 };
@@ -179,47 +172,63 @@ public:
 
 template <class T>
 class AsynchronousInstrument : public Instrument, virtual public metrics_api::AsynchronousInstrument<T> {
-
+    
 public:
     AsynchronousInstrument() = default;
-
+    
     AsynchronousInstrument(nostd::string_view name,
                            nostd::string_view description,
                            nostd::string_view unit,
                            bool enabled,
                            void (*callback)(metrics_api::ObserverResult<T>),
                            metrics_api::InstrumentKind kind):
-                           Instrument(name, description, unit, enabled, kind)
+    Instrument(name, description, unit, enabled, kind)
     {
         this->callback_ = callback;
     }
-
+    
+    /**
+     * Captures data through a manual call rather than the automatic collection process instituted
+     * in the run function.  Asynchronous instruments are generally expected to obtain data from
+     * their callbacks rather than direct calls.  This function is used by the callback to store data.
+     *
+     * @param value is the numerical representation of the metric being captured
+     * @param labels is the numerical representation of the metric being captured
+     * @return none
+     */
     virtual void observe(T value, const trace::KeyValueIterable &labels) override = 0;
-
-//    virtual std::unordered_map<std::string, nostd::shared_ptr<Aggregator<T>>> GetBoundAggregators() = 0;
     
     virtual std::vector<Record> GetRecords() = 0;
     
+    /**
+     * Captures data by activating the callback function associated with the
+     * instrument and storing its return value.  Callbacks for asynchronous
+     * instruments are defined during construction.
+     *
+     * @param none
+     * @return none
+     */
     virtual void run() override = 0;
 };
 
+// Helper functions for turning a trace::KeyValueIterable into a string
 inline void print_value(std::stringstream &ss,
                         common::AttributeValue &value,
                         bool jsonTypes = false)
 {
-  switch (value.index())
-  {
-    case common::AttributeType::TYPE_STRING:
-      if (jsonTypes)
-        ss << '"';
-      ss << nostd::get<nostd::string_view>(value);
-      if (jsonTypes)
-        ss << '"';
-      break;
-    default:
-          throw std::invalid_argument("Labels must be strings");
-      break;
-  }
+    switch (value.index())
+    {
+        case common::AttributeType::TYPE_STRING:
+            if (jsonTypes)
+                ss << '"';
+            ss << nostd::get<nostd::string_view>(value);
+            if (jsonTypes)
+                ss << '"';
+            break;
+        default:
+            throw std::invalid_argument("Labels must be strings");
+            break;
+    }
 };
 
 // Utility function which converts maps to strings for better performance
@@ -240,19 +249,19 @@ inline std::string KvToString(const trace::KeyValueIterable &kv) noexcept
     size_t size = kv.size();
     if (size)
     {
-      size_t i = 1;
-      // TODO: we need to do something with this iterator. It is not very convenient.
-      // Having range-based for loop would've been nicer
-      kv.ForEachKeyValue([&](nostd::string_view key, common::AttributeValue value) noexcept {
-        ss << "\"" << key << "\":";
-        print_value(ss, value, true);
-        if (size != i)
-        {
-          ss << ",";
-        }
-        i++;
-        return true;
-      });
+        size_t i = 1;
+        // TODO: we need to do something with this iterator. It is not very convenient.
+        // Having range-based for loop would've been nicer
+        kv.ForEachKeyValue([&](nostd::string_view key, common::AttributeValue value) noexcept {
+            ss << "\"" << key << "\":";
+            print_value(ss, value, true);
+            if (size != i)
+            {
+                ss << ",";
+            }
+            i++;
+            return true;
+        });
     };
     ss << "}";
     ss << std::endl;

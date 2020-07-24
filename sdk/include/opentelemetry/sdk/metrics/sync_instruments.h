@@ -90,31 +90,26 @@ public:
         }
     }
     
+    /*
+    * Add adds the value to the counter's sum. The labels should contain
+    * the keys and values to be associated with this value.  Counters only
+    * accept positive valued updates.
+    *
+    * @param value the numerical representation of the metric being captured
+    * @param labels the set of labels, as key-value pairs
+    */
     virtual void add(T value, const trace::KeyValueIterable &labels) override {
         this->mu_.lock();
-        auto sp = bindCounter(labels);
-        sp->update(value);
-        sp->unbind();
+        if (value < 0){
+            throw std::invalid_argument("Counter instrument updates must be non-negative.");
+        } else {
+            auto sp = bindCounter(labels);
+            sp->update(value);
+            sp->unbind();
+        }
         this->mu_.unlock();
     }
 
-    /*
-     * Add adds the value to the counter's sum. The labels should contain
-     * the keys and values to be associated with this value.  Counters only     * accept positive
-     * valued updates.
-     *
-     * @param value the numerical representation of the metric being captured
-     * @param labels the set of labels, as key-value pairs
-     */
-    
-//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-//        for (auto x : boundInstruments_){
-//             ret[x.first] = x.second;
-//        }
-//        return ret;
-//    }
-    
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
         for (auto x : boundInstruments_){
@@ -155,8 +150,8 @@ public:
      * @param labels the set of labels, as key-value pairs
      */
     virtual void add(T value) override {
-        this->mu_.lock(); // does this need to be locked?
-        this->update(value); //update calls the aggregator which is itself locked
+        this->mu_.lock();
+        this->update(value);
         this->mu_.unlock();
     }
 };
@@ -214,14 +209,6 @@ public:
         sp->unbind();
         this->mu_.unlock();
     }
-
-//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-//        for (auto const& x : boundInstruments_){
-////            ret[x.first] = x.second;
-//        }
-//        return ret;
-//    }
     
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
@@ -320,14 +307,6 @@ public:
         sp->unbind();
         this->mu_.unlock();
     }
-
-//    virtual std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> GetBoundInstruments() override {
-//        std::unordered_map<std::string, nostd::shared_ptr<BoundSynchronousInstrument<T>>> ret;
-//        for (auto const& x : boundInstruments_){
-////            ret[x.first] = x.second;
-//        }
-//        return ret;
-//    }
     
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
