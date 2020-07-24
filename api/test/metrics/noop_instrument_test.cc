@@ -8,62 +8,62 @@ OPENTELEMETRY_BEGIN_NAMESPACE
 namespace metrics
 {
 
-//void noopIntCallback(ObserverResult<int> result)
-//{
-//  std::map<std::string, std::string> labels = {{"key", "value"}};
-//  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-//  result.observe(1, labelkv);
-//  result.observe(-1, labelkv);
-//}
-//
-//void noopDoubleCallback(ObserverResult<double> result)
-//{
-//  std::map<std::string, std::string> labels = {{"key", "value"}};
-//  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-//  result.observe(1.5, labelkv);
-//  result.observe(-1.5, labelkv);
-//}
-//
-//TEST(ValueObserver, Observe)
-//{
-//  NoopValueObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
-//
-//  NoopValueObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
-//
-//  std::map<std::string, std::string> labels = {{"key", "value"}};
-//  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-//
-//  alpha.observe(1, labelkv);
-//  beta.observe(1.5, labelkv);
-//}
-//
-//TEST(SumObserver, DefaultConstruction)
-//{
-//  NoopSumObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
-//
-//  NoopSumObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
-//
-//  std::map<std::string, std::string> labels = {{"key", "value"}};
-//  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-//
-//  alpha.observe(1, labelkv);
-//  beta.observe(1.5, labelkv);
-//}
-//
-//TEST(UpDownSumObserver, DefaultConstruction)
-//{
-//  NoopUpDownSumObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
-//
-//  NoopUpDownSumObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
-//
-//  std::map<std::string, std::string> labels = {{"key", "value"}};
-//  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-//
-//  alpha.observe(1, labelkv);
-//  beta.observe(1.0, labelkv);
-//  alpha.observe(-1, labelkv);
-//  beta.observe(-1.0, labelkv);
-//}
+void noopIntCallback(ObserverResult<int> result)
+{
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+  result.observe(1, labelkv);
+  result.observe(-1, labelkv);
+}
+
+void noopDoubleCallback(ObserverResult<double> result)
+{
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+  result.observe(1.5, labelkv);
+  result.observe(-1.5, labelkv);
+}
+
+TEST(ValueObserver, Observe)
+{
+  NoopValueObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
+
+  NoopValueObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
+
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+
+  alpha.observe(1, labelkv);
+  beta.observe(1.5, labelkv);
+}
+
+TEST(SumObserver, DefaultConstruction)
+{
+  NoopSumObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
+
+  NoopSumObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
+
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+
+  alpha.observe(1, labelkv);
+  beta.observe(1.5, labelkv);
+}
+
+TEST(UpDownSumObserver, DefaultConstruction)
+{
+  NoopUpDownSumObserver<int> alpha("test", "none", "unitless", true, &noopIntCallback);
+
+  NoopUpDownSumObserver<double> beta("test", "none", "unitless", true, &noopDoubleCallback);
+
+  std::map<std::string, std::string> labels = {{"key", "value"}};
+  auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+
+  alpha.observe(1, labelkv);
+  beta.observe(1.0, labelkv);
+  alpha.observe(-1, labelkv);
+  beta.observe(-1.0, labelkv);
+}
 
 TEST(Counter, DefaultConstruction)
 {
