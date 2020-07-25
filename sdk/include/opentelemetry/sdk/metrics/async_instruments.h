@@ -9,7 +9,6 @@
 #include <vector>
 #include <memory>
 
-
  namespace metrics_api = opentelemetry::metrics;
 
  OPENTELEMETRY_BEGIN_NAMESPACE

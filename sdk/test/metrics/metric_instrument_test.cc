@@ -9,11 +9,36 @@
 #include <memory>
 #include <iostream>
 
+namespace metrics_api = opentelemetry::metrics;
+
+
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace sdk
 {
 namespace metrics
 {
+
+void ObserverConstructorCallback(metrics_api::ObserverResult<int> result){
+    std::map<std::string, std::string> labels = {{"key", "value"}};
+    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+    result.observe(1,labelkv);
+}
+
+TEST(APISDKCONV, async){
+    nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>> alpha = nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>>(new ValueObserver<int>("ankit","none","unitles",true, &ObserverConstructorCallback));
+    
+    std::map<std::string, std::string> labels = {{"key587", "value264"}};
+    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+    
+    alpha->observe(123456,labelkv);
+    
+    EXPECT_EQ(dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetLabels(),"{\"key587\":\"value264\"}");
+    
+    AggregatorVariant canCollect = dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetAggregator();
+    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<short>>>(canCollect), false);
+    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<int>>>(canCollect), true);
+    EXPECT_EQ(nostd::get<nostd::shared_ptr<Aggregator<int>>>(canCollect)->get_values()[0], 123456);
+}
 
 TEST(Counter, InstrumentFunctions)
 {

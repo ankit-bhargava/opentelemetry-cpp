@@ -264,7 +264,6 @@ inline std::string KvToString(const trace::KeyValueIterable &kv) noexcept
         });
     };
     ss << "}";
-    ss << std::endl;
     return ss.str();
 }
 
