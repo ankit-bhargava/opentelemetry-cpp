@@ -113,7 +113,9 @@ public:
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
         for (auto x : boundInstruments_){
-            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundCounter<T>*>(x.second.get())->GetAggregator()));
+            auto agg_ptr = dynamic_cast<BoundCounter<T>*>(x.second.get())->GetAggregator();
+            agg_ptr->checkpoint();
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, agg_ptr));
         }
         return ret;
     }
@@ -213,7 +215,9 @@ public:
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
         for (auto x : boundInstruments_){
-            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundUpDownCounter<T>*>(x.second.get())->GetAggregator()));
+            auto agg_ptr = dynamic_cast<BoundCounter<T>*>(x.second.get())->GetAggregator();
+            agg_ptr->checkpoint();
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, agg_ptr));
         }
         return ret;
     }
@@ -311,7 +315,9 @@ public:
     virtual std::vector<Record> GetRecords() override {
         std::vector<Record> ret;
         for (auto x : boundInstruments_){
-            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, dynamic_cast<BoundValueRecorder<T>*>(x.second.get())->GetAggregator()));
+            auto agg_ptr = dynamic_cast<BoundCounter<T>*>(x.second.get())->GetAggregator();
+            agg_ptr->checkpoint();
+            ret.push_back(Record(x.second->GetName(), x.second->GetDescription(), x.first, agg_ptr));
         }
         return ret;
     }

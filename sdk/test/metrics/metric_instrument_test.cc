@@ -18,28 +18,6 @@ namespace sdk
 namespace metrics
 {
 
-void ObserverConstructorCallback(metrics_api::ObserverResult<int> result){
-    std::map<std::string, std::string> labels = {{"key", "value"}};
-    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-    result.observe(1,labelkv);
-}
-
-TEST(APISDKCONV, async){
-    nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>> alpha = nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>>(new ValueObserver<int>("ankit","none","unitles",true, &ObserverConstructorCallback));
-    
-    std::map<std::string, std::string> labels = {{"key587", "value264"}};
-    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
-    
-    alpha->observe(123456,labelkv);
-    
-    EXPECT_EQ(dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetLabels(),"{\"key587\":\"value264\"}");
-    
-    AggregatorVariant canCollect = dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetAggregator();
-    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<short>>>(canCollect), false);
-    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<int>>>(canCollect), true);
-    EXPECT_EQ(nostd::get<nostd::shared_ptr<Aggregator<int>>>(canCollect)->get_values()[0], 123456);
-}
-
 TEST(Counter, InstrumentFunctions)
 {
   Counter<int> alpha("enabled", "no description", "unitless", true);
@@ -128,8 +106,8 @@ TEST(Counter, getAggsandnewupdate)
     EXPECT_EQ(theta.size(),3);
     EXPECT_EQ(theta[0].GetName(), "test");
     EXPECT_EQ(theta[0].GetDescription(), "none");
-    EXPECT_EQ(theta[0].GetLabels(), "{\"key2\":\"value2\",\"key3\":\"value3\"}\n");
-    EXPECT_EQ(theta[1].GetLabels(), "{\"key1\":\"value1\"}\n");
+    EXPECT_EQ(theta[0].GetLabels(), "{\"key2\":\"value2\",\"key3\":\"value3\"}");
+    EXPECT_EQ(theta[1].GetLabels(), "{\"key1\":\"value1\"}");
 }
 
 void CounterCallback(std::shared_ptr<Counter<int>> in, int freq, const trace::KeyValueIterable &labels){
@@ -238,6 +216,22 @@ void ObserverConstructorCallback(metrics_api::ObserverResult<int> result){
     std::map<std::string, std::string> labels = {{"key", "value"}};
     auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
     result.observe(1,labelkv);
+}
+
+TEST(ApiSdkConversion, async){
+    nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>> alpha = nostd::shared_ptr<metrics_api::AsynchronousInstrument<int>>(new ValueObserver<int>("ankit","none","unitles",true, &ObserverConstructorCallback));
+    
+    std::map<std::string, std::string> labels = {{"key587", "value264"}};
+    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+    
+    alpha->observe(123456,labelkv);
+    EXPECT_EQ(dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetLabels(),"{\"key587\":\"value264\"}");
+    
+    alpha->observe(123456,labelkv);
+    AggregatorVariant canCollect = dynamic_cast<AsynchronousInstrument<int>*>(alpha.get())->GetRecords()[0].GetAggregator();
+    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<short>>>(canCollect), false);
+    EXPECT_EQ(nostd::holds_alternative<nostd::shared_ptr<Aggregator<int>>>(canCollect), true);
+    EXPECT_EQ(nostd::get<nostd::shared_ptr<Aggregator<int>>>(canCollect)->get_checkpoint()[0], 123456);
 }
 
 TEST(IntValueObserver, InstrumentFunctions)

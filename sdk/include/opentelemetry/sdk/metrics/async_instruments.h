@@ -70,6 +70,7 @@
      virtual std::vector<Record> GetRecords() override {
          std::vector<Record> ret;
          for (auto x : boundAggregators_){
+             x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
          return ret;
@@ -141,6 +142,7 @@
      virtual std::vector<Record> GetRecords() override {
          std::vector<Record> ret;
          for (auto x : boundAggregators_){
+             x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
          return ret;
@@ -203,6 +205,7 @@
      virtual std::vector<Record> GetRecords() override {
          std::vector<Record> ret;
          for (auto x : boundAggregators_){
+             x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
          return ret;
