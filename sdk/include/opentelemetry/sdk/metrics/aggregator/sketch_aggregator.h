@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <variant>
 #include <vector>
+#include <map>
+#include <cmath>
 
 namespace metrics_api = opentelemetry::metrics;
 
@@ -34,7 +36,7 @@ public:
      * Sum is stored in values_[0]
      * Count is stored in position_[1]
      */
-    SketchAggregator(AggregatorKind kind, double error_bound, size_t max_buckets = 2048)
+    SketchAggregator(metrics_api::InstrumentKind kind, double error_bound, size_t max_buckets = 2048)
     {
         
         this->kind_ = kind;
@@ -55,29 +57,30 @@ public:
     {
         double idx = ceil(log(val)/log(gamma));
         quantiles[idx]+=1;
-        values_[1] += 1;
-        if (quantiles.size() > max_buckets){
+        this->values_[1] += 1;
+        this->values_[0] += val;
+        if (quantiles.size() > max_buckets_){
             int minidx = quantiles.begin()->first, minidxval = quantiles.begin()->second;
             quantiles.erase(minidx);
             quantiles[quantiles.begin()->first]+=minidxval;
         }
     }
     
-    void quantile(double q){
+    int get_quantiles(double q) override {
         if (q < 0 or q > 1){
             throw std::invalid_argument("Quantile values must fall between 0 and 1");
         }
         auto iter = quantiles.begin();
         
         // switch to long long for count???
-        int idx = iter->first();
-        int count = iter->second();
+        int idx = iter->first;
+        int count = iter->second;
         
         // will iterator ever reach the end, think it is a possibility
-        while (count < q*(values_[1]-1) and iter != quantiles.end()){
+        while (count < q*(this->values_[1]-1) and iter != quantiles.end()){
             iter++;
-            idx = iter->first();
-            count += iter->second();
+            idx = iter->first;
+            count += iter->second;
         }
         return 2*pow(gamma, idx)/(gamma + 1);
     }
@@ -91,10 +94,10 @@ public:
      */
     void checkpoint() override
     {
-        checkpoint_ = values_;
-        checkpoint_quantiles_ = quantiles_;
-        values_[0]=0;
-        values_[1]=0;
+        this->checkpoint_ = this->values_;
+        checkpoint_quantiles = quantiles;
+        this->values_[0]=0;
+        this->values_[1]=0;
         quantiles.clear();
     }
     
@@ -108,13 +111,13 @@ public:
     {
         if (gamma != other.gamma){
             throw std::invalid_argument("Aggregators must have identical error tolerance");
-        } elseif (max_buckets_ != other.max_buckets_) {
+        } else if (max_buckets_ != other.max_buckets_) {
             throw std::invalid_argument("Aggregators must have the same maximum bucket allowance");
         }
         auto other_iter = other.quantiles.begin();
         while (other_iter != other.quantiles.end()){
             quantiles[other_iter->first()] += other_iter->second();
-            if (quantiles.size() > max_buckets){
+            if (quantiles.size() > max_buckets_){
                 int minidx = quantiles.begin()->first, minidxval = quantiles.begin()->second;
                 quantiles.erase(minidx);
                 quantiles[quantiles.begin()->first]+=minidxval;
@@ -143,6 +146,25 @@ public:
     std::vector<T> get_values() override
     {
         return this->values_;
+    }
+    
+    // virtual function to be overriden for the Histogram Aggregator
+    virtual std::vector<double> get_boundaries() override {
+        std::vector<double> ret;
+        //std::cerr <<"increased quantiles... " <<quantiles.size() <<std::endl;
+        for (auto const &x: checkpoint_quantiles){
+            ret.push_back(x.first);
+        }
+        return ret;
+    }
+    
+    // virtual function to be overriden for the Histogram Aggregator
+    virtual std::vector<int> get_counts() override {
+        std::vector<int> ret;
+        for (auto const &x: checkpoint_quantiles){
+            ret.push_back(x.second);
+        }
+        return ret;
     }
     
     
