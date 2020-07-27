@@ -32,7 +32,11 @@ public:
     HistogramAggregator(metrics_api::InstrumentKind kind, std::vector<double> boundaries)
     {
         if (!std::is_sorted(boundaries.begin(),boundaries.end())){
+#if __EXCEPTIONS
             throw std::invalid_argument("Histogram boundaries must be monotonic.");
+#else
+            std::terminate();
+#endif
         }
         this->kind_ = kind;
         this->agg_kind_ = AggregatorKind::Histogram;
@@ -107,10 +111,18 @@ public:
         
         // Ensure that incorrect types are not merged
         if (this->agg_kind_ != other.agg_kind_){
+#if __EXCEPTIONS
             throw std::invalid_argument("Aggregators of different types cannot be merged.");
-        // Reject histogram merges with differing boundary vectors
+#else
+            std::terminate();
+#endif
+            // Reject histogram merges with differing boundary vectors
         } else if (other.boundaries_ != this->boundaries_){
+#if __EXCEPTIONS
             throw std::invalid_argument("Histogram boundaries do not match.");
+#else
+            std::terminate();
+#endif
         }
         
         this->values_[0] += other.values_[0];

@@ -69,7 +69,11 @@ public:
             this->mu_.unlock();
         }
         else {
-            throw std::invalid_argument("Aggregators of different types cannot be merged.");
+            #if __EXCEPTIONS
+                  throw std::invalid_argument("Aggregators of different types cannot be merged.");
+            #else
+                  std::terminate();
+            #endif
         }
     }
     
