@@ -1,4 +1,5 @@
 #include "opentelemetry/sdk/metrics/controller.h"
+#include "opentelemetry/sdk/metrics/meter.h"
 
 #include <gtest/gtest.h>
 #include <thread>
@@ -57,9 +58,15 @@ namespace metrics
 // Test updating with a uniform set of updates
 TEST(Controller, Constructor)
 {
-    std::shared_ptr<metrics_api::Meter> meter = std::shared_ptr<metrics_api::Meter>(new Meter("Test"));
-    PushController alpha(meter, std::unique_ptr<MetricsExporter> (new
-    opentelemetry::exporter::metrics::OStreamMetricsExporter), std::shared_ptr<Processor>(new Processor()), 5);
+//    std::shared_ptr<metrics_api::Meter> meter = std::shared_ptr<metrics_api::Meter>(new Meter("Test"));
+    auto beta = new Meter("Test");
+//    PushController alpha(meter,
+//                         std::unique_ptr<MetricsExporter>(new opentelemetry::exporter::metrics::OStreamMetricsExporter),
+//                         std::shared_ptr<Processor>(new Processor()),
+//                         .01);
+//    alpha.start();
+//    sleep(1);
+//    alpha.stop();
 }
 
 
