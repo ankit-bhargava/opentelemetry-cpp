@@ -3,6 +3,8 @@
 #include "opentelemetry/sdk/metrics/instrument.h"
 #include "opentelemetry/metrics/async_instruments.h"
 #include "opentelemetry/version.h"
+#include "opentelemetry/sdk/metrics/aggregator/counter_aggregator.h"
+#include "opentelemetry/sdk/metrics/aggregator/min_max_sum_count_aggregator.h"
 #include <stdexcept>
 #include <map>
 #include <sstream>

@@ -3,7 +3,6 @@
 #include "opentelemetry/metrics/async_instruments.h"
 #include "opentelemetry/metrics/instrument.h"
 #include "opentelemetry/metrics/sync_instruments.h"
-#include "opentelemetry/metrics/noop.h"
 #include "opentelemetry/nostd/shared_ptr.h"
 #include "opentelemetry/nostd/span.h"
 #include "opentelemetry/nostd/string_view.h"
@@ -24,8 +23,6 @@ class Meter
 {
 public:
   virtual ~Meter() = default;
-    
-    Meter() = default;
 
   /**
    * Creates a Counter with the passed characteristics and returns a shared_ptr to that Counter.
@@ -39,37 +36,25 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>> NewNoopShortCounter(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                         const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>>();
-  };
+  virtual nostd::shared_ptr<Counter<short>> NewShortCounter(nostd::string_view name,
+                                                            nostd::string_view description,
+                                                            nostd::string_view unit,
+                                                            const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>> NewNoopIntCounter(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                     const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>>();
-  };
+  virtual nostd::shared_ptr<Counter<int>> NewIntCounter(nostd::string_view name,
+                                                        nostd::string_view description,
+                                                        nostd::string_view unit,
+                                                        const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>> NewNoopFloatCounter(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                         const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>>();
-  };
+  virtual nostd::shared_ptr<Counter<float>> NewFloatCounter(nostd::string_view name,
+                                                            nostd::string_view description,
+                                                            nostd::string_view unit,
+                                                            const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>> NewNoopDoubleCounter(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                           const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>>();
-  };
+  virtual nostd::shared_ptr<Counter<double>> NewDoubleCounter(nostd::string_view name,
+                                                              nostd::string_view description,
+                                                              nostd::string_view unit,
+                                                              const bool enabled) = 0;
 
   /**
    * Creates an UpDownCounter with the passed characteristics and returns a shared_ptr to that
@@ -84,37 +69,28 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>> NewNoopShortUpDownCounter(
+  virtual nostd::shared_ptr<UpDownCounter<short>> NewShortUpDownCounter(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                               const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>>();
-  };
+      const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>> NewNoopIntUpDownCounter(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                           const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>>();
-  };
+  virtual nostd::shared_ptr<UpDownCounter<int>> NewIntUpDownCounter(nostd::string_view name,
+                                                                    nostd::string_view description,
+                                                                    nostd::string_view unit,
+                                                                    const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>> NewNoopFloatUpDownCounter(
+  virtual nostd::shared_ptr<UpDownCounter<float>> NewFloatUpDownCounter(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                               const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>>();
-  };
+      const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>> NewNoopDoubleUpDownCounter(
+  virtual nostd::shared_ptr<UpDownCounter<double>> NewDoubleUpDownCounter(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                                 const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>>();
-  };
+      const bool enabled) = 0;
 
   /**
    * Creates a ValueRecorder with the passed characteristics and returns a shared_ptr to that
@@ -129,37 +105,28 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>> NewNoopShortValueRecorder(
+  virtual nostd::shared_ptr<ValueRecorder<short>> NewShortValueRecorder(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                               const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<short>>();
-  };
+      const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>> NewNoopIntValueRecorder(
-      nostd::string_view name,
-      nostd::string_view description,
-      nostd::string_view unit,
-                                                                                           const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<int>>();
-  };
+  virtual nostd::shared_ptr<ValueRecorder<int>> NewIntValueRecorder(nostd::string_view name,
+                                                                    nostd::string_view description,
+                                                                    nostd::string_view unit,
+                                                                    const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>> NewNoopFloatValueRecorder(
+  virtual nostd::shared_ptr<ValueRecorder<float>> NewFloatValueRecorder(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                               const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<float>>();
-  };
+      const bool enabled) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>> NewNoopDoubleValueRecorder(
+  virtual nostd::shared_ptr<ValueRecorder<double>> NewDoubleValueRecorder(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
-                                                                                                 const bool enabled) {
-      return opentelemetry::nostd::shared_ptr<SynchronousInstrument<double>>();
-  };
+      const bool enabled) = 0;
 
   /**
    * Creates a SumObserver with the passed characteristics and returns a shared_ptr to that
@@ -175,41 +142,33 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>> NewNoopShortSumObserver(
+  virtual nostd::shared_ptr<SumObserver<short>> NewShortSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                              void (*callback)(ObserverResult<short>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>>();
-  };
+      void (*callback)(ObserverResult<short>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>> NewNoopIntSumObserver(
+  virtual nostd::shared_ptr<SumObserver<int>> NewIntSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                          void (*callback)(ObserverResult<int>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>>();
-  };
+      void (*callback)(ObserverResult<int>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>> NewNoopFloatSumObserver(
+  virtual nostd::shared_ptr<SumObserver<float>> NewFloatSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                              void (*callback)(ObserverResult<float>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>>();
-  };
+      void (*callback)(ObserverResult<float>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>> NewNoopDoubleSumObserver(
+  virtual nostd::shared_ptr<SumObserver<double>> NewDoubleSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                void (*callback)(ObserverResult<double>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>>();
-  };
+      void (*callback)(ObserverResult<double>)) = 0;
 
   /**
    * Creates an UpDownSumObserver with the passed characteristics and returns a shared_ptr to
@@ -225,41 +184,33 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>> NewNoopShortUpDownSumObserver(
+  virtual nostd::shared_ptr<UpDownSumObserver<short>> NewShortUpDownSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                    void (*callback)(ObserverResult<short>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>>();
-  };
+      void (*callback)(ObserverResult<short>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>> NewNoopIntUpDownSumObserver(
+  virtual nostd::shared_ptr<UpDownSumObserver<int>> NewIntUpDownSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                void (*callback)(ObserverResult<int>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>>();
-  };
+      void (*callback)(ObserverResult<int>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>> NewNoopFloatUpDownSumObserver(
+  virtual nostd::shared_ptr<UpDownSumObserver<float>> NewFloatUpDownSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                    void (*callback)(ObserverResult<float>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>>();
-  };
+      void (*callback)(ObserverResult<float>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>> NewNoopDoubleUpDownSumObserver(
+  virtual nostd::shared_ptr<UpDownSumObserver<double>> NewDoubleUpDownSumObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                      void (*callback)(ObserverResult<double>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>>();
-  };
+      void (*callback)(ObserverResult<double>)) = 0;
 
   /**
    * Creates a ValueObserver with the passed characteristics and returns a shared_ptr to that
@@ -275,104 +226,58 @@ public:
    * @throws IllegalArgumentException if a different metric by the same name exists in this meter.
    * @throws IllegalArgumentException if the {@code name} does not match spec requirements.
    */
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>> NewNoopShortValueObserver(
+  virtual nostd::shared_ptr<ValueObserver<short>> NewShortValueObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                void (*callback)(ObserverResult<short>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<short>>();
-  };
+      void (*callback)(ObserverResult<short>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>> NewNoopIntValueObserver(
+  virtual nostd::shared_ptr<ValueObserver<int>> NewIntValueObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                            void (*callback)(ObserverResult<int>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<int>>();
-  };
+      void (*callback)(ObserverResult<int>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>> NewNoopFloatValueObserver(
+  virtual nostd::shared_ptr<ValueObserver<float>> NewFloatValueObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                void (*callback)(ObserverResult<float>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<float>>();
-  };
+      void (*callback)(ObserverResult<float>)) = 0;
 
-  virtual opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>> NewNoopDoubleValueObserver(
+  virtual nostd::shared_ptr<ValueObserver<double>> NewDoubleValueObserver(
       nostd::string_view name,
       nostd::string_view description,
       nostd::string_view unit,
       const bool enabled,
-                                                                                                  void (*callback)(ObserverResult<double>)) {
-      return opentelemetry::nostd::shared_ptr<AsynchronousInstrument<double>>();
-  };
+      void (*callback)(ObserverResult<double>)) = 0;
 
   /**
    * Utility method that allows users to atomically record measurements to a set of
    * synchronous metric instruments with a common set of labels.
    *
    * @param labels the set of labels to associate with this recorder.
-   * @param values a span of pairs where the first element of the pair is a metric instrument
-   * to record to, and the second element is the value to update that instrument with.
+   * @param instruments a span of pointers to the instruments to record to.
+   * @param values a span of values to record to the instruments in the corresponding
+   * position in the instruments span.
    */
-  virtual void RecordShortBatch(
-      const trace::KeyValueIterable &labels,
-      nostd::span<const nostd::shared_ptr<SynchronousInstrument<short>>> instruments,
-                                nostd::span<const short> values) noexcept {};
+  virtual void RecordShortBatch(const trace::KeyValueIterable &labels,
+                                nostd::span<SynchronousInstrument<short> *> instruments,
+                                nostd::span<const short> values) noexcept = 0;
 
-  void RecordShortBatch(std::initializer_list<std::pair<nostd::string_view, nostd::string_view>> labels,
-                        std::initializer_list<nostd::shared_ptr<SynchronousInstrument<short>>> instruments,
-                        std::initializer_list<short> values)
-  {
-    opentelemetry::trace::KeyValueIterableView<std::initializer_list<std::pair<nostd::string_view, nostd::string_view>>> labelskv{labels};
+  virtual void RecordIntBatch(const trace::KeyValueIterable &labels,
+                              nostd::span<SynchronousInstrument<int> *> instruments,
+                              nostd::span<const int> values) noexcept = 0;
 
-    RecordShortBatch(labelskv,
-                     nostd::span<const nostd::shared_ptr<SynchronousInstrument<short>>> {instruments.begin(), instruments.end()},
-                     nostd::span<const short> {values.begin(), values.end()});
-  }
+  virtual void RecordFloatBatch(const trace::KeyValueIterable &labels,
+                                nostd::span<SynchronousInstrument<float> *> instruments,
+                                nostd::span<const float> values) noexcept = 0;
 
-  virtual void RecordIntBatch(
-      const trace::KeyValueIterable &labels,
-                              nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<int>>, int>> values) noexcept {};
-
-  void RecordIntBatch(std::initializer_list<std::pair<nostd::string_view, nostd::string_view>> labels,
-                      std::initializer_list<std::pair<nostd::shared_ptr<SynchronousInstrument<int>>, int>> values)
-  {
-    opentelemetry::trace::KeyValueIterableView<std::initializer_list<std::pair<nostd::string_view, nostd::string_view>>> labelskv{labels};
-
-    RecordIntBatch(labelskv, nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<int>>, int>>{values.begin(), values.end()});
-  }
-
-  virtual void RecordFloatBatch(
-      const trace::KeyValueIterable &labels,
-                                nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<float>>, float>> values) noexcept {};
-
-  void RecordFloatBatch(std::initializer_list<std::pair<nostd::string_view, nostd::string_view>> labels,
-                        std::initializer_list<std::pair<nostd::shared_ptr<SynchronousInstrument<float>>, float>> values)
-  {
-    opentelemetry::trace::KeyValueIterableView<std::initializer_list<std::pair<nostd::string_view, nostd::string_view>>> labelskv{labels};
-
-    RecordFloatBatch(labelskv, nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<float>>, float>>{values.begin(), values.end()});
-  }
-
-  virtual void RecordDoubleBatch(
-      const trace::KeyValueIterable &labels,
-                                 nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<double>>, double>> values) noexcept {};
-
-  void RecordDoubleBatch(std::initializer_list<std::pair<nostd::string_view, nostd::string_view>> labels,
-                        std::initializer_list<std::pair<nostd::shared_ptr<SynchronousInstrument<double>>, double>> values)
-  {
-    opentelemetry::trace::KeyValueIterableView<std::initializer_list<std::pair<nostd::string_view, nostd::string_view>>> labelskv{labels};
-
-    RecordDoubleBatch(labelskv, nostd::span<const std::pair<nostd::shared_ptr<SynchronousInstrument<double>>, double>>{values.begin(), values.end()});
-  }
-
-
-
+  virtual void RecordDoubleBatch(const trace::KeyValueIterable &labels,
+                                 nostd::span<SynchronousInstrument<double> *> instruments,
+                                 nostd::span<const double> values) noexcept = 0;
 };
 }  // namespace metrics
 OPENTELEMETRY_END_NAMESPACE

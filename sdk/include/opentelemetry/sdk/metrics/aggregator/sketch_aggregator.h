@@ -49,6 +49,7 @@ public:
         this->values_   = std::vector<T>(2, 0); // Sum in [0], Count in [1]
         this->checkpoint_ = std::vector<T>(2, 0);
         max_buckets_ = max_buckets;
+        error_bound_ = error_bound;
         gamma = (1+error_bound)/(1-error_bound);
     }
     
@@ -81,22 +82,26 @@ public:
      *
      * @param q, the quantile to calculate (for example 0.5 is equivelant to the 50th percentile)
      */
-    int get_quantiles(double q) override {
-        if (q < 0 or q > 1){
-            throw std::invalid_argument("Quantile values must fall between 0 and 1");
+        virtual T get_quantiles(double q) override {
+            if (q < 0 or q > 1){
+    #if __EXCEPTIONS
+                throw std::invalid_argument("Quantile values must fall between 0 and 1");
+    #else
+                std::terminate();
+    #endif
+            }
+            auto iter = checkpoint_raw_.begin();
+            int idx = iter->first;
+            int count = iter->second;
+
+            // will iterator ever reach the end, think it is a possibility
+            while (count < (q * (this->checkpoint_[1]-1)) && iter != checkpoint_raw_.end()){
+                iter++;
+                idx = iter->first;
+                count += iter->second;
+            }
+            return round(2*pow(gamma, idx)/(gamma + 1));
         }
-        auto iter = checkpoint_raw_.begin();
-        int idx = iter->first;
-        int count = iter->second;
-        
-        // will iterator ever reach the end, think it is a possibility
-        while (count < (q * (this->checkpoint_[1]-1)) && iter != checkpoint_raw_.end()){
-            iter++;
-            idx = iter->first;
-            count += iter->second;
-        }
-        return round(2*pow(gamma, idx)/(gamma + 1));
-    }
     
     /**
      * Checkpoints the current value.  This function will overwrite the current checkpoint with the
@@ -135,6 +140,9 @@ public:
         
         this->values_[0]+=other.values_[0];
         this->values_[1]+=other.values_[1];
+        this->checkpoint_[0]+=other.checkpoint_[0];
+        this->checkpoint_[1]+=other.checkpoint_[1];
+        
         auto other_iter = other.raw_.begin();
         while (other_iter != other.raw_.end()){
             raw_[other_iter->first] += other_iter->second;
@@ -144,6 +152,17 @@ public:
                 raw_[raw_.begin()->first]+=minidxval;
             }
             other_iter++;
+        }
+        
+        auto other_ckpt_iter = other.checkpoint_raw_.begin();
+        while (other_ckpt_iter != other.checkpoint_raw_.end()){
+            checkpoint_raw_[other_ckpt_iter->first] += other_ckpt_iter->second;
+            if (checkpoint_raw_.size() > max_buckets_){
+                int minidx = checkpoint_raw_.begin()->first, minidxval = checkpoint_raw_.begin()->second;
+                checkpoint_raw_.erase(minidx);
+                checkpoint_raw_[checkpoint_raw_.begin()->first]+=minidxval;
+            }
+            other_ckpt_iter++;
         }
         this-> mu_.unlock();
     }
@@ -185,6 +204,16 @@ public:
     }
     
     /**
+    * Returns the error bound
+    *
+    * @param none
+    * @return the error bound specified during construction
+    */
+    virtual double get_error_bound() override {
+        return error_bound_;
+    }
+    
+    /**
      * Returns the count of each value tracked by this sketch aggregator.  These are returned
      * in the same order as the indices returned by the get_boundaries function.
      *
@@ -199,9 +228,14 @@ public:
         return ret;
     }
     
+    virtual size_t get_max_buckets() override {
+        return max_buckets_;
+    }
+    
 private:
     double gamma;
     size_t max_buckets_;
+    double error_bound_;
     std::map<int,int> raw_;
     std::map<int,int> checkpoint_raw_;
 };
