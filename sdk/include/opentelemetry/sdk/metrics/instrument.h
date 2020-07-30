@@ -71,7 +71,7 @@ public:
                                nostd::string_view unit,
                                bool enabled,
                                metrics_api::InstrumentKind kind,
-                               nostd::shared_ptr<Aggregator<T>> agg)
+                               std::shared_ptr<Aggregator<T>> agg)
     :Instrument(name, description, unit, enabled, kind), agg_(agg)
     { this->inc_ref(); } // increase reference count when instantiated
     
@@ -121,10 +121,10 @@ public:
      * @param none
      * @return the aggregator assigned to this instrument
      */
-    virtual nostd::shared_ptr<Aggregator<T>> GetAggregator() final { return agg_; }
+    virtual std::shared_ptr<Aggregator<T>> GetAggregator() final { return agg_; }
     
 private:
-    nostd::shared_ptr<Aggregator<T>> agg_;
+    std::shared_ptr<Aggregator<T>> agg_;
     int ref_ = 0;
 };
 
