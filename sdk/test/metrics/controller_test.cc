@@ -1,5 +1,6 @@
 #include "opentelemetry/sdk/metrics/controller.h"
 #include "opentelemetry/sdk/metrics/meter.h"
+#include "opentelemetry/sdk/metrics/ungrouped_processor.h"
 
 #include <gtest/gtest.h>
 #include <thread>
@@ -58,15 +59,22 @@ namespace metrics
 // Test updating with a uniform set of updates
 TEST(Controller, Constructor)
 {
-//    std::shared_ptr<metrics_api::Meter> meter = std::shared_ptr<metrics_api::Meter>(new Meter("Test"));
-    auto beta = new Meter("Test");
-//    PushController alpha(meter,
-//                         std::unique_ptr<MetricsExporter>(new opentelemetry::exporter::metrics::OStreamMetricsExporter),
-//                         std::shared_ptr<Processor>(new Processor()),
-//                         .01);
-//    alpha.start();
-//    sleep(1);
-//    alpha.stop();
+    
+    std::shared_ptr<metrics_api::Meter> meter = std::shared_ptr<metrics_api::Meter>(new Meter("Test"));
+    PushController alpha(meter,
+                         std::unique_ptr<MetricsExporter>(new opentelemetry::exporter::metrics::OStreamMetricsExporter),
+                         std::shared_ptr<MetricsProcessor>(new opentelemetry::sdk::metrics::UngroupedMetricsProcessor(true)),
+                         .05);
+    auto instr = meter->NewIntCounter("test","none","none",true);
+    std::map<std::string, std::string> labels = {{"key1", "value1"}};
+    auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
+    
+    alpha.start();
+    for (int i = 0; i < 5; i++){
+        instr->add(i, labelkv);
+        usleep(.05*1000000);
+    }
+    alpha.stop();
 }
 
 
