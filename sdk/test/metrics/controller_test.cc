@@ -57,7 +57,7 @@ namespace metrics
 //}
 
 // Test updating with a uniform set of updates
-TEST(Controller, Constructor)
+TEST(MetricsController, Constructor)
 {
     
     std::shared_ptr<metrics_api::Meter> meter = std::shared_ptr<metrics_api::Meter>(new Meter("Test"));
