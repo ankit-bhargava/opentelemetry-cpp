@@ -72,7 +72,7 @@ TEST(Controller, Constructor)
     alpha.start();
     for (int i = 0; i < 5; i++){
         instr->add(i, labelkv);
-        usleep(.05*1000000);
+        usleep(.04*1000000);
     }
     alpha.stop();
 }
