@@ -37,3 +37,4 @@
 
 .gitignore
 *.DS_Store
+*.vscode
