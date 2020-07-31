@@ -66,6 +66,7 @@ public:
         if (this->agg_kind_ == other.agg_kind_) {
             this->mu_.lock();
             this->values_[0] += other.values_[0];
+            this->checkpoint_[0] += other.checkpoint_[0];
             this->mu_.unlock();
         }
         else {

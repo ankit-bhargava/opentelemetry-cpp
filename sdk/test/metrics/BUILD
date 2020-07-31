@@ -1,3 +1,5 @@
+load("//bazel:otel_cc_benchmark.bzl", "otel_cc_benchmark")
+
 cc_test(
     name = "counter_aggregator_test",
     srcs = [
@@ -29,6 +31,12 @@ cc_test(
         "//sdk/src/metrics",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+otel_cc_benchmark(
+    name = "metric_instrument_benchmark",
+    srcs = ["metric_instrument_benchmark.cc"],
+    deps = ["//sdk/src/metrics"],
 )
 
 cc_test(
