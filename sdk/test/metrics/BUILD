@@ -94,3 +94,15 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_binary(
+    name = "pipeline_test",
+    srcs = [
+        "pipeline_test.cc",
+    ],
+    deps = [
+        "//sdk/src/metrics",
+	"//exporters/ostream:ostream_metrics_exporter",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
