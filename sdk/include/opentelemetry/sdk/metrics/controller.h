@@ -110,7 +110,6 @@ public:
    */
     void tick()
     {
-        std::cout << "tick" << std::endl;
         std::vector<Record> collected = dynamic_cast<Meter*>(meter_.get())->Collect();
         for (const auto &rec: collected){
             processor_->process(rec);

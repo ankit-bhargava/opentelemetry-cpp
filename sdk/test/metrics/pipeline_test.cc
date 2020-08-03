@@ -16,10 +16,13 @@
 #include <variant>
 #include <unordered_map>
 #include <map>
+#include <chrono>
 
 #include "opentelemetry/sdk/metrics/controller.h"
 #include "opentelemetry/sdk/metrics/meter.h"
 #include "opentelemetry/sdk/metrics/ungrouped_processor.h"
+#include "opentelemetry/sdk/metrics/meter_provider.h"
+#include "opentelemetry/metrics/provider.h"
 
 namespace metrics_api = opentelemetry::metrics;
 namespace metrics_sdk = opentelemetry::sdk::metrics;
@@ -38,7 +41,11 @@ class MetricGenerator {
 public:
     
     static void generateData() {
-        std::cout <<"generating data" <<std::endl;
+        int interval = 2.5*1000;
+        std::cout <<"initializing components" <<std::endl;
+        
+        auto provider = opentelemetry::nostd::shared_ptr<metrics_api::MeterProvider>(new sdkmetrics::MeterProvider);
+        opentelemetry::metrics::Provider::SetMeterProvider(provider);
         
         // 1. Initialize exporter
         std::unique_ptr<metrics_sdk::MetricsExporter> e = std::unique_ptr<metrics_sdk::MetricsExporter>(new metrics_exporter::OStreamMetricsExporter);
@@ -47,17 +54,23 @@ public:
         std::shared_ptr<metrics_sdk::MetricsProcessor> p = std::shared_ptr<metrics_sdk::MetricsProcessor>(new metrics_sdk::UngroupedMetricsProcessor(false));
         
         // 3. Initialize meter
-        std::shared_ptr<metrics_api::Meter> m = std::shared_ptr<metrics_api::Meter>(new metrics_sdk::Meter("Test"));
+        opentelemetry::nostd::shared_ptr<metrics_api::Meter> m = provider->GetMeter("Test");
         
         // 4. Initialize Controller
-        metrics_sdk::PushController c(m, std::move(e),p, 5);
+        metrics_sdk::PushController c(m, std::move(e),p, interval/1000);
         c.start();
         
         // 5. use these to instrument some work
+        std::cout <<"Simulating work" <<std::endl;
+        auto start = std::chrono::steady_clock::now();
         doSomeSimulatedWork(m);
+        auto end = std::chrono::steady_clock::now();
+        std::cout <<"Simulation complete after: "<<std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() <<" milliseconds" <<std::endl;
+        
         
         // 6. shutdown metric collector
         c.stop();
+        std::cout <<"controller shutdown" <<std::endl;
         
     }
     
@@ -75,8 +88,7 @@ private:
         return ret;
     }
     
-    static void doSomeSimulatedWork(std::shared_ptr<metrics_api::Meter> m){
-        std::cout <<"simulating work" <<std::endl;
+    static void doSomeSimulatedWork(opentelemetry::nostd::shared_ptr<metrics_api::Meter> m){
         ifstream goldenData;
         goldenData.open("sdk/test/data/RefData.csv");
         
@@ -96,23 +108,23 @@ private:
             auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labelmap)>{labelmap};
             
             if (instrument == "ctr"){
-                printf("ctr->add(%i, \"%s\")\n", val, labels.c_str());
+//                printf("ctr->add(%i, \"%s\")\n", val, labels.c_str());
                 ctr->add(val, labelkv);
             } else if (instrument == "udctr"){
-                printf("udctr->add(%i, \"%s\")\n", val, labels.c_str());
+//                printf("udctr->add(%i, \"%s\")\n", val, labels.c_str());
                 udctr->add(val, labelkv);
             }
             else if (instrument == "vrec"){
-                printf("vrec->record(%i, \"%s\")\n", val, labels.c_str());
+//                printf("vrec->record(%i, \"%s\")\n", val, labels.c_str());
                 vrec->record(val, labelkv);
             } else if (instrument == "sobs"){
-                printf("sobs->observe(%i, \"%s\")\n", val, labels.c_str());
+//                printf("sobs->observe(%i, \"%s\")\n", val, labels.c_str());
                 sobs->observe(val, labelkv);
             } else if (instrument == "udobs"){
-                printf("udobs->observe(%i, \"%s\")\n", val, labels.c_str());
+//                printf("udobs->observe(%i, \"%s\")\n", val, labels.c_str());
                 udobs->observe(val, labelkv);
             } else if (instrument == "vobs"){
-                printf("voobs->observe(%i, \"%s\")\n", val, labels.c_str());
+//                printf("voobs->observe(%i, \"%s\")\n", val, labels.c_str());
                 vobs->observe(val, labelkv);
             } else {
                 printf("bad entry");
@@ -125,6 +137,5 @@ private:
 
 
 int main(int argc, const char * argv[]) {
-    std::cout <<"working" <<std::endl;
     MetricGenerator::generateData();
 }
