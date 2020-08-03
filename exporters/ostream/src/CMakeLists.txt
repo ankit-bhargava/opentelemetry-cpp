@@ -1,0 +1,1 @@
+add_library(opentelemetry_ostream_exporter metrics_exporter.cc span_exporter.cc)
