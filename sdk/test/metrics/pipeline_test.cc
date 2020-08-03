@@ -41,10 +41,10 @@ class MetricGenerator {
 public:
     
     static void generateData() {
-        int interval = 2.5*1000;
+        int interval = 5*1000;
         std::cout <<"initializing components" <<std::endl;
         
-        auto provider = opentelemetry::nostd::shared_ptr<metrics_api::MeterProvider>(new sdkmetrics::MeterProvider);
+        auto provider = opentelemetry::nostd::shared_ptr<metrics_api::MeterProvider>(new metrics_sdk::MeterProvider);
         opentelemetry::metrics::Provider::SetMeterProvider(provider);
         
         // 1. Initialize exporter
@@ -56,7 +56,7 @@ public:
         // 3. Initialize meter
         opentelemetry::nostd::shared_ptr<metrics_api::Meter> m = provider->GetMeter("Test");
         
-        // 4. Initialize Controller
+        // 4. Initialize controller
         metrics_sdk::PushController c(m, std::move(e),p, interval/1000);
         c.start();
         
