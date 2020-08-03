@@ -75,6 +75,7 @@
              x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
+         boundAggregators_.clear();
          return ret;
      }
 
@@ -147,6 +148,7 @@
              x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
+         boundAggregators_.clear();
          return ret;
      }
 
@@ -210,6 +212,7 @@
              x.second->checkpoint();
              ret.push_back(Record(this->GetName(), this->GetDescription(), x.first, x.second));
          }
+         boundAggregators_.clear();
          return ret;
      }
 
