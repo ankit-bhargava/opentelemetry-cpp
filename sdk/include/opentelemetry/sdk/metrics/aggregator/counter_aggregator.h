@@ -37,7 +37,7 @@ public:
     void update(T val) override
     {
         this->mu_.lock();
-        this->values_[0] += val;  // atomic operation
+        this->values_[0] += val; 
         this->mu_.unlock();
     }
     

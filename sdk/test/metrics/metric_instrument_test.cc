@@ -55,6 +55,8 @@ TEST(Counter, Binding)
   auto epsilon = alpha.bindCounter(labelkv1);
   auto zeta = alpha.bindCounter(labelkv2);
   auto eta = alpha.bindCounter(labelkv3);
+    
+    beta->add(1);
 
   EXPECT_EQ (beta->get_ref(), 1);
   EXPECT_EQ(gamma->get_ref(),3);

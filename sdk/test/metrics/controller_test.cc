@@ -29,9 +29,11 @@ TEST(Controller, Constructor)
     auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
     
     alpha.start();
+    
     for (int i=0; i<20; i++){
+//        std::cerr <<"adding" <<std::endl;
         instr->add(i, labelkv);
-        usleep(.01*1000000);
+//        std::cerr <<"done adding" <<std::endl;
     }
     alpha.stop();
 }

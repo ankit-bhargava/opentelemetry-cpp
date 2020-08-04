@@ -82,7 +82,11 @@ public:
      * @param none
      * @return void
      */
-    virtual void unbind() override { ref_ -= 1; }
+    virtual void unbind() override {
+        this -> mu_.lock();
+        ref_ -= 1;
+        this -> mu_.unlock();
+    }
     
     /**
      * Increments the reference count. This function is used when binding or instantiating.
@@ -90,7 +94,11 @@ public:
      * @param none
      * @return void
      */
-    virtual void inc_ref() override { ref_ += 1; }
+    virtual void inc_ref() override {
+        this->mu_.lock();
+        ref_ += 1;
+        this->mu_.unlock();
+    }
     
     /**
      * Returns the current reference count of the instrument.  This value is used to

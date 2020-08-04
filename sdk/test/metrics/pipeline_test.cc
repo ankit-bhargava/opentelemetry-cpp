@@ -33,7 +33,7 @@ using namespace std;
 void ObserverConstructorCallback(metrics_api::ObserverResult<int> result){
     std::map<std::string, std::string> labels = {{"key", "value"}};
     auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labels)>{labels};
-    result.observe(1,labelkv);
+    result.observe(0,labelkv);
 }
 
 class MetricGenerator {
@@ -92,12 +92,12 @@ private:
         ifstream goldenData;
         goldenData.open("sdk/test/data/RefData.csv");
         
-        auto ctr= m->NewIntCounter("Counter","none", "none", true);
-        auto udctr= m->NewIntUpDownCounter("upDownCounter","none", "none", true);
-        auto vrec= m->NewIntValueRecorder("Recorder","none", "none", true);
-        auto sobs= m->NewIntSumObserver("SumObserver","none", "none", true, &ObserverConstructorCallback);
-        auto udobs= m->NewIntUpDownSumObserver("UpDownSumObserver","none", "none", true, &ObserverConstructorCallback);
-        auto vobs= m->NewIntValueObserver("ValueObserver","none", "none", true, &ObserverConstructorCallback);
+        auto ctr= m->NewIntCounter("ctr","none", "none", true);
+        auto udctr= m->NewIntUpDownCounter("udctr","none", "none", true);
+        auto vrec= m->NewIntValueRecorder("vrec","none", "none", true);
+        auto sobs= m->NewIntSumObserver("sobs","none", "none", true, &ObserverConstructorCallback);
+        auto udobs= m->NewIntUpDownSumObserver("udobs","none", "none", true, &ObserverConstructorCallback);
+        auto vobs= m->NewIntValueObserver("vobs","none", "none", true, &ObserverConstructorCallback);
         
         std::string line;
         while (std::getline(goldenData,line)){
@@ -106,6 +106,9 @@ private:
             std::string labels = line.substr(line.find('"')+1, line.rfind('"')-line.find('"')-1);
             map<string,string> labelmap = str2map(labels);
             auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labelmap)>{labelmap};
+            
+            // add in all instruments
+            // flag areas that can cause issues
             
             if (instrument == "ctr"){
 //                printf("ctr->add(%i, \"%s\")\n", val, labels.c_str());
