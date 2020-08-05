@@ -22,23 +22,61 @@ int main() {
                         std::shared_ptr<sdkmetrics::MetricsProcessor>(new opentelemetry::sdk::metrics::UngroupedMetricsProcessor(false)),
                         .05);
 
-  // Create and instrument with labelset
-  auto intcounter = meter->NewIntCounter("test","none","none",true);
+  // Create and instrument
   auto intupdowncounter = meter->NewIntUpDownCounter("UpDownCounter","None","none",true);
+  auto intcounter = meter->NewIntCounter("Counter","none","none",true);
 
+  // Create a labelset
   std::map<std::string, std::string> labels = {{"key", "value"}};
   auto labelkv = trace::KeyValueIterableView<decltype(labels)>{labels};
   
-  /*auto boundintupdowncounter = intupdowncounter->bind(labelkv);
-  boundintupdowncounter->add(123);
-  boundintupdowncounter->unbind();  */
+  // Create arrays of instrument and values to add to them
+  metrics_api::SynchronousInstrument<int>* iinstr_arr[] = {intupdowncounter.get(), intcounter.get()};
+  int ivalues_arr[] = {10, 5};
+
+  // Change the arrays to be nostd::spans
+  nostd::span<metrics_api::SynchronousInstrument<int>*> instrument_span {iinstr_arr};
+  nostd::span<const int, 2> instrument_values {ivalues_arr};
+
+  /** 
+  * First way of updating an instrument, RecordBatch. We can update multiple instruments at once by
+  * using a span of instruments and a span of values. This RecordBatch will update the ith
+  * instrument with the ith value.
+  **/
+  std::cout << "Update instruments by using RecordBatch" << std::endl;
+  ControllerStateless.start();
+
+  meter->RecordIntBatch(labelkv, instrument_span, instrument_values);
+
+  ControllerStateless.stop();
+  std::cout << std::endl;
+
+  /** 
+   * Second way of updating an instrument, bind then add. This method the user binds an instrument to a labelset
+   * Then add to the bounded instrument, then unbind.
+   **/
+
+  std::cout << "Update instruments by using binding then adding" << std::endl;
+  ControllerStateless.start();
+
+  auto boundintupdowncounter = intupdowncounter->bindUpDownCounter(labelkv);
+  boundintupdowncounter->add(50);
+  boundintupdowncounter->unbind();
+
+  ControllerStateless.stop();
+  std::cout << std::endl;
+
+  /**
+   * The Third and final way is to add a value with a labelset at the same time. This also shows
+   * The difference between using a Stateless and Stateful Processor
+   */
   
   // Start exporting from the Controller with Stateless Processor
   std::cout << "-----" << " Stateless Processor " << "-----" << std::endl;
   ControllerStateless.start();
   for (int i = 0; i < 20; i++)
   {
-    intcounter->add(i, labelkv);
+    intupdowncounter->add(i, labelkv);
     usleep(.01*1000000);
   }
   ControllerStateless.stop(); 
@@ -54,7 +92,7 @@ int main() {
   ControllerStateful.start();
   for (int i = 0; i < 20; i++)
   {
-    intcounter->add(i, labelkv);
+    intupdowncounter->add(i, labelkv);
     usleep(.01*1000000);
   }
   ControllerStateful.stop(); 
