@@ -9,7 +9,7 @@ namespace nostd      = opentelemetry::nostd;
 namespace trace      = opentelemetry::trace;
 
 int main() {
-  // Initalize and set the global MeterProvider
+  // Initialize and set the global MeterProvider
   auto provider = nostd::shared_ptr<metrics_api::MeterProvider>(new sdkmetrics::MeterProvider);
   opentelemetry::metrics::Provider::SetMeterProvider(provider);
 
@@ -52,7 +52,7 @@ int main() {
   std::cout << std::endl;
 
   /** 
-   * Second way of updating an instrument, bind then add. This method the user binds an instrument to a labelset
+   * Second way of updating an instrument, bind then add. In this method the user binds an instrument to a labelset
    * Then add to the bounded instrument, then unbind.
    **/
 
@@ -70,7 +70,7 @@ int main() {
    * The Third and final way is to add a value with a labelset at the same time. This also shows
    * The difference between using a Stateless and Stateful Processor
    */
-  
+
   // Start exporting from the Controller with Stateless Processor
   std::cout << "-----" << " Stateless Processor " << "-----" << std::endl;
   ControllerStateless.start();
