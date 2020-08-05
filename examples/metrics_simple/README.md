@@ -58,7 +58,7 @@ ctr->add(5, labelkv);
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for instructions on building and running the example.
 
-## Design Documents
+## Additional Documentation
 
 [API Design](https://github.com/open-o11y/otel-docs/blob/master/cpp-metrics/api-design.md)
 
