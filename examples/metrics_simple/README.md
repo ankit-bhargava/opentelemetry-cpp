@@ -55,3 +55,13 @@ ctr->add(5, labelkv);
 7. Stop the controller once the program finished. This ensures that any metrics inside the pipeline are properly exported. Otherwise, some metrics may be destroyed in cleanup.
 
 `controller.stop();`
+
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for instructions on building and running the example.
+
+## Design Documents
+
+[API Design](https://github.com/open-o11y/otel-docs/blob/master/cpp-metrics/api-design.md)
+
+[SDK Design](https://github.com/open-o11y/otel-docs/blob/master/cpp-metrics/sdk-design.md)
+
+[OStreamExporters Design](https://github.com/open-o11y/otel-docs/blob/master/exporter/ostream/ostream-exporter-design.md)
