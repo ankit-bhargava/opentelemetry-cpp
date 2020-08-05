@@ -34,6 +34,7 @@ TEST(Controller, Constructor)
 //        std::cerr <<"adding" <<std::endl;
         instr->add(i, labelkv);
 //        std::cerr <<"done adding" <<std::endl;
+        usleep(.01*1000000);
     }
     alpha.stop();
 }

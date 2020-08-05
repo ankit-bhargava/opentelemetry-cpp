@@ -30,7 +30,25 @@ namespace metrics_exporter = opentelemetry::exporter::metrics;
 
 using namespace std;
 
-void ObserverConstructorCallback(metrics_api::ObserverResult<int> result){
+void IntObserverConstructorCallback(metrics_api::ObserverResult<int> result){
+    std::map<std::string, std::string> labels = {{"key", "value"}};
+    auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labels)>{labels};
+    result.observe(0,labelkv);
+}
+
+void ShortObserverConstructorCallback(metrics_api::ObserverResult<short> result){
+    std::map<std::string, std::string> labels = {{"key", "value"}};
+    auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labels)>{labels};
+    result.observe(0,labelkv);
+}
+
+void FloatObserverConstructorCallback(metrics_api::ObserverResult<float> result){
+    std::map<std::string, std::string> labels = {{"key", "value"}};
+    auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labels)>{labels};
+    result.observe(0,labelkv);
+}
+
+void DoubleObserverConstructorCallback(metrics_api::ObserverResult<double> result){
     std::map<std::string, std::string> labels = {{"key", "value"}};
     auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labels)>{labels};
     result.observe(0,labelkv);
@@ -42,7 +60,7 @@ public:
     
     static void generateData() {
         int interval = 5*1000;
-        std::cout <<"initializing components" <<std::endl;
+        std::cerr <<"initializing components" <<std::endl;
         
         auto provider = opentelemetry::nostd::shared_ptr<metrics_api::MeterProvider>(new metrics_sdk::MeterProvider);
         opentelemetry::metrics::Provider::SetMeterProvider(provider);
@@ -61,16 +79,16 @@ public:
         c.start();
         
         // 5. use these to instrument some work
-        std::cout <<"Simulating work" <<std::endl;
+        std::cerr <<"Simulating work" <<std::endl;
         auto start = std::chrono::steady_clock::now();
         doSomeSimulatedWork(m);
         auto end = std::chrono::steady_clock::now();
-        std::cout <<"Simulation complete after: "<<std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() <<" milliseconds" <<std::endl;
+        std::cerr <<"Simulation complete after: "<<std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() <<" milliseconds" <<std::endl;
         
         
         // 6. shutdown metric collector
         c.stop();
-        std::cout <<"controller shutdown" <<std::endl;
+        std::cerr <<"controller shutdown" <<std::endl;
         
     }
     
@@ -92,12 +110,37 @@ private:
         ifstream goldenData;
         goldenData.open("sdk/test/data/RefData.csv");
         
-        auto ctr= m->NewIntCounter("ctr","none", "none", true);
-        auto udctr= m->NewIntUpDownCounter("udctr","none", "none", true);
-        auto vrec= m->NewIntValueRecorder("vrec","none", "none", true);
-        auto sobs= m->NewIntSumObserver("sobs","none", "none", true, &ObserverConstructorCallback);
-        auto udobs= m->NewIntUpDownSumObserver("udobs","none", "none", true, &ObserverConstructorCallback);
-        auto vobs= m->NewIntValueObserver("vobs","none", "none", true, &ObserverConstructorCallback);
+        auto ictr= m->NewIntCounter("ictr","none", "none", true);
+        auto iudctr= m->NewIntUpDownCounter("iudctr","none", "none", true);
+        auto ivrec= m->NewIntValueRecorder("ivrec","none", "none", true);
+        auto isobs= m->NewIntSumObserver("isobs","none", "none", true, &IntObserverConstructorCallback);
+        auto iudobs= m->NewIntUpDownSumObserver("iudobs","none", "none", true, &IntObserverConstructorCallback);
+        auto ivobs= m->NewIntValueObserver("ivobs","none", "none", true, &IntObserverConstructorCallback);
+        
+        auto sctr= m->NewShortCounter("sctr","none", "none", true);
+        auto sudctr= m->NewShortUpDownCounter("sudctr","none", "none", true);
+        auto svrec= m->NewShortValueRecorder("svrec","none", "none", true);
+        auto ssobs= m->NewShortSumObserver("ssobs","none", "none", true, &ShortObserverConstructorCallback);
+        auto sudobs= m->NewShortUpDownSumObserver("sudobs","none", "none", true, &ShortObserverConstructorCallback);
+        auto svobs= m->NewShortValueObserver("svobs","none", "none", true, &ShortObserverConstructorCallback);
+        
+        auto fctr= m->NewFloatCounter("fctr","none", "none", true);
+        auto fudctr= m->NewFloatUpDownCounter("fudctr","none", "none", true);
+        auto fvrec= m->NewFloatValueRecorder("fvrec","none", "none", true);
+        auto fsobs= m->NewFloatSumObserver("fsobs","none", "none", true, &FloatObserverConstructorCallback);
+        auto fudobs= m->NewFloatUpDownSumObserver("fudobs","none", "none", true, &FloatObserverConstructorCallback);
+        auto fvobs= m->NewFloatValueObserver("fvobs","none", "none", true, &FloatObserverConstructorCallback);
+        
+        auto dctr= m->NewDoubleCounter("dctr","none", "none", true);
+        auto dudctr= m->NewDoubleUpDownCounter("dudctr","none", "none", true);
+        auto dvrec= m->NewDoubleValueRecorder("dvrec","none", "none", true);
+        auto dsobs= m->NewDoubleSumObserver("dsobs","none", "none", true, &DoubleObserverConstructorCallback);
+        auto dudobs= m->NewDoubleUpDownSumObserver("dudobs","none", "none", true, &DoubleObserverConstructorCallback);
+        auto dvobs= m->NewDoubleValueObserver("dvobs","none", "none", true, &DoubleObserverConstructorCallback);
+        
+        
+        // EXCEPTIONS: Can occur when an appropriate update value is passed to an instrument,
+        // an invalid name, or a duplicated name
         
         std::string line;
         while (std::getline(goldenData,line)){
@@ -106,33 +149,59 @@ private:
             std::string labels = line.substr(line.find('"')+1, line.rfind('"')-line.find('"')-1);
             map<string,string> labelmap = str2map(labels);
             auto labelkv = opentelemetry::trace::KeyValueIterableView<decltype(labelmap)>{labelmap};
-            
-            // add in all instruments
-            // flag areas that can cause issues
-            
-            if (instrument == "ctr"){
-//                printf("ctr->add(%i, \"%s\")\n", val, labels.c_str());
-                ctr->add(val, labelkv);
-            } else if (instrument == "udctr"){
-//                printf("udctr->add(%i, \"%s\")\n", val, labels.c_str());
-                udctr->add(val, labelkv);
-            }
-            else if (instrument == "vrec"){
-//                printf("vrec->record(%i, \"%s\")\n", val, labels.c_str());
-                vrec->record(val, labelkv);
-            } else if (instrument == "sobs"){
-//                printf("sobs->observe(%i, \"%s\")\n", val, labels.c_str());
-                sobs->observe(val, labelkv);
-            } else if (instrument == "udobs"){
-//                printf("udobs->observe(%i, \"%s\")\n", val, labels.c_str());
-                udobs->observe(val, labelkv);
-            } else if (instrument == "vobs"){
-//                printf("voobs->observe(%i, \"%s\")\n", val, labels.c_str());
-                vobs->observe(val, labelkv);
+
+            if (instrument == "ictr"){
+                ictr->add(val, labelkv);
+            } else if (instrument == "iudctr"){
+                iudctr->add(val, labelkv);
+            } else if (instrument == "ivrec"){
+                ivrec->record(val, labelkv);
+            } else if (instrument == "isobs"){
+                isobs->observe(val, labelkv);
+            } else if (instrument == "iudobs"){
+                iudobs->observe(val, labelkv);
+            } else if (instrument == "ivobs"){
+                ivobs->observe(val, labelkv);
+            } else if (instrument == "sctr"){
+                sctr->add(val, labelkv);
+            } else if (instrument == "sudctr"){
+                sudctr->add(val, labelkv);
+            } else if (instrument == "svrec"){
+                svrec->record(val, labelkv);
+            } else if (instrument == "ssobs"){
+                ssobs->observe(val, labelkv);
+            } else if (instrument == "sudobs"){
+                sudobs->observe(val, labelkv);
+            } else if (instrument == "svobs"){
+                svobs->observe(val, labelkv);
+            } else if (instrument == "fctr"){
+                fctr->add(val, labelkv);
+            } else if (instrument == "fudctr"){
+                fudctr->add(val, labelkv);
+            } else if (instrument == "fvrec"){
+                fvrec->record(val, labelkv);
+            } else if (instrument == "fsobs"){
+                fsobs->observe(val, labelkv);
+            } else if (instrument == "fudobs"){
+                fudobs->observe(val, labelkv);
+            } else if (instrument == "fvobs"){
+                fvobs->observe(val, labelkv);
+            } else if (instrument == "dctr"){
+                dctr->add(val, labelkv);
+            } else if (instrument == "dudctr"){
+                dudctr->add(val, labelkv);
+            } else if (instrument == "dvrec"){
+                dvrec->record(val, labelkv);
+            } else if (instrument == "dsobs"){
+                dsobs->observe(val, labelkv);
+            } else if (instrument == "dudobs"){
+                dudobs->observe(val, labelkv);
+            } else if (instrument == "dvobs"){
+                dvobs->observe(val, labelkv);
             } else {
-                printf("bad entry");
+                std::cerr <<"Bad entry" <<std::endl;
             }
-//            usleep(.1*1000000);
+            //usleep(.1*1000000);
         }
         
     }
