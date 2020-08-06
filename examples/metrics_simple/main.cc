@@ -14,7 +14,7 @@ int main() {
   opentelemetry::metrics::Provider::SetMeterProvider(provider);
 
   // Get the Meter from the MeterProvider
-  nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("Test");
+  nostd::shared_ptr<metrics_api::Meter> meter = provider->GetMeter("Test","0.1.0");
   
   // Create the controller with Stateless Metrics Processor
   sdkmetrics::PushController ControllerStateless(meter,
@@ -43,20 +43,20 @@ int main() {
   * using a span of instruments and a span of values. This RecordBatch will update the ith
   * instrument with the ith value.
   **/
-  std::cout << "Update instruments by using RecordBatch" << std::endl;
+  std::cout << "----------- EXAMPLE 1 ----------" << std::endl;
   ControllerStateless.start();
 
+  // Updating multiple instruments with the same labelset
   meter->RecordIntBatch(labelkv, instrument_span, instrument_values);
 
   ControllerStateless.stop();
   std::cout << std::endl;
-
   /** 
    * Second way of updating an instrument, bind then add. In this method the user binds an instrument to a labelset
    * Then add to the bounded instrument, then unbind.
    **/
 
-  std::cout << "Update instruments by using binding then adding" << std::endl;
+  std::cout << "----------- EXAMPLE 2 ----------" << std::endl;
   ControllerStateless.start();
 
   auto boundintupdowncounter = intupdowncounter->bindUpDownCounter(labelkv);
@@ -65,7 +65,6 @@ int main() {
 
   ControllerStateless.stop();
   std::cout << std::endl;
-
   /**
    * The Third and final way is to add a value with a labelset at the same time. This also shows
    * The difference between using a Stateless and Stateful Processor
